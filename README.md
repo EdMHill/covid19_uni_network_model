@@ -72,11 +72,11 @@ Houses function files to be used when running the uni model.
     Function specifying how the initial disease states will be assigned each simulation replicate.
 
 - **contact_tracing_fns.jl**  
-    Functions that are used with the university network model for performing contact tracing. Includes:  
-        * Get portion of dynamic contacts to be recallable (recallable_dynamic_contacts)
-        * Check contacts made in study setting (get_study_contacts)
-        * Check contacts made in society setting (get_society_contacts)
-        * Perform forward CT from an identified infector (forwardCT_from_infector! and trace_node!)
+    Functions that are used with the university network model for performing contact tracing. Includes:
+    * Get portion of dynamic contacts to be recallable (recallable_dynamic_contacts)
+    * Check contacts made in study setting (get_study_contacts)
+    * Check contacts made in society setting (get_society_contacts)
+    * Perform forward CT from an identified infector (forwardCT_from_infector! and trace_node!)
 
 - **intervention_condition_affect_fns.jl**  
     Functions to implement/rescind trigger based interventions

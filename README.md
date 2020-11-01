@@ -27,7 +27,7 @@ Jupyter notebook giving example run of the model.
 Houses function files to be used when running the uni model.
 
 - **main_function.jl**
-    Outline of the code structure:
+    Outline of the code structure:  
         - Unpack required variables
         - Set the random number generator
         - Initialise students into cohorts, split by department and into first year undergrad, non-first year undergrad, postgrad (supporting functions in network_generation_fns.jl)
@@ -59,7 +59,7 @@ Houses function files to be used when running the uni model.
         - Return outputs
 
 - **additional_fns.jl**   
-    Stash of functions to run the university model. Includes:
+    Stash of functions to run the university model. Includes:  
         - Time in state increment fn (increment_counters!)
         - load configs for sensitivity runs, generates (load_configs)
         - find_network_parameters (Load relevant network params based on number of cohorts requested)
@@ -71,21 +71,21 @@ Houses function files to be used when running the uni model.
 - **seed_initial_states_fn.jl**   
     Function specifying how the initial disease states will be assigned each simulation replicate.
 
-- **contact_tracing_fns.jl**
-    Functions that are used with the university network model for performing contact tracing. Includes:
-        - Get portion of dynamic contacts to be recallable (recallable_dynamic_contacts)
-        - Check contacts made in study setting (get_study_contacts)
-        - Check contacts made in society setting (get_society_contacts)
-        - Perform forward CT from an identified infector (forwardCT_from_infector! and trace_node!)
+- **contact_tracing_fns.jl**  
+    Functions that are used with the university network model for performing contact tracing. Includes:  
+        * Get portion of dynamic contacts to be recallable (recallable_dynamic_contacts)
+        * Check contacts made in study setting (get_study_contacts)
+        * Check contacts made in society setting (get_society_contacts)
+        * Perform forward CT from an identified infector (forwardCT_from_infector! and trace_node!)
 
-- **intervention_condition_affect_fns.jl**
+- **intervention_condition_affect_fns.jl**  
     Functions to implement/rescind trigger based interventions
 
-- **mass_testing_fns.jl**
+- **mass_testing_fns.jl**  
     Mass testing module
 
-- **network_generation_fns.jl**
+- **network_generation_fns.jl**  
     Produces the network layers
 
-- **parametertypes.jl**
+- **parametertypes.jl**  
     Defines the parameter types used with the network model for universities. Fields accessible with dot notation. Example using type student_params, with a variable named student_info. student_info.cohort_ID accesses the value in the cohort_ID field.

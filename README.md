@@ -20,7 +20,7 @@ Directory to store simulation outputs
 ## src
 
 **university_model.jl**  
-The main model run file. Pass requested configuration to uni_network_run (in include_files_uni_model/main_function.jl) and saves outputs into MAT an MAT file.
+The main model run file. Pass requested configuration to uni_network_run (in include_files_uni_model/main_function.jl) and saves outputs into an MAT file.
 
 **uni_model_demo.ipynb**  
 Jupyter notebook giving example run of the model.

@@ -4,6 +4,8 @@ This repository contains files for performing computational simulations of a net
 
 The code was developed for the analysis presented in the scientific paper "Modelling SARS-CoV-2 transmission in a UK university setting" by Edward M. Hill, Benjamin D. Atkins, Matt J. Keeling, Michael J. Tildesley and Louise Dyson.
 
+Preprint details: Hill et al. (2020) Modelling SARS-CoV-2 transmission in a UK university setting. *medRxiv* doi: 10.1101/2020.10.15.20208454. URL: https://doi.org/10.1101/2020.10.15.20208454.
+
 Model simulations are performed using the programming language Julia.
 Julia makes use of environments, allowing bespoke package lists for separate projects. Documentation on working with environments and installing packages in the same state that is given by the project manifest: https://julialang.github.io/Pkg.jl/v1.5/environments/#Using-someone-else's-project-1
 

@@ -1264,8 +1264,13 @@ function uni_network_run(RNGseed::Int64,
 
         # divide number of infections by number of infectors to find Rt
         for time=1:(endtime+1)
-            # divide by the number of nodes that were infected at time
-            output.Rt[time,count] = output.Rt[time,count] / output.newinf[time,count]
+            # divide by the number of nodes that were infected (entered the latent state)
+            # at time
+            if time == 1
+                output.Rt[time,count] = output.Rt[time,count] / output.numlat[time,count]
+            else
+                output.Rt[time,count] = output.Rt[time,count] / (output.numlat[time,count]-output.numlat[time-1,count])
+            end
         end
 
         # Print to screen info on run just completed

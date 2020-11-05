@@ -11,7 +11,6 @@ using Pkg
 Pkg.activate("../")
 
 using Plots, MAT, LinearAlgebra, Statistics
-using RollingFunctions
 
 # List of sensitivity configs to plot results for
 svty_variables = [# "RNGseed",
@@ -126,8 +125,12 @@ for svty_itr = 1:length(svty_variables)
             cmax = 25000
         end
 
-        # Get required size of array
-        ma_length = length(rollmean(replace!(Rt_unfiltered[:,1,1,1],NaN=>0.0),ma_width))
+        # Calculate MA for Rt
+        if ma_width%2 == 1
+            ma_length = Rt_final_timepoint - (ma_width - 1)
+        else
+            ma_length = Rt_final_timepoint - ma_width
+        end
 
         # Set up ma_width based on if odd or even
         if ma_width%2 == 1
@@ -140,7 +143,7 @@ for svty_itr = 1:length(svty_variables)
             # Even
             ma_data_pts_lb_side = (ma_width÷2) - 1
             ma_data_pts_ub_side = (ma_width÷2)
-            ma_data_pts_plot_offset_lb = (ma_width÷2) - 1
+            ma_data_pts_plot_offset_lb = (ma_width÷2)
             ma_data_pts_plot_offset_ub = (ma_width÷2)
         end
 
@@ -156,17 +159,78 @@ for svty_itr = 1:length(svty_variables)
         Rt_ma = zeros(Float64, countfinal, ma_length)
 
         if variable_name=="mawidth"
-            Rt_ma[1,:] = rollmean(replace(Rt_unfiltered[:,1,1],NaN=>0.0), ma_width)
+            # Use first slice of data, var_itr = 1
+            if ma_width%2 == 1
+                # Central moving average using odd number of data points
+                Rt_ma[1,:] = [mean(filter(!isnan,Rt_unfiltered[(lb-ma_data_pts_lb_side):(lb+ma_data_pts_ub_side),1,1])) for lb=(ma_data_pts_lb_side+1):(Rt_final_timepoint-ma_data_pts_ub_side)]
+            else
+                # Central moving average using even number of data points
+                Rt_ma_temp = zeros(Float64, ma_length+1)
+                Rt_ma_temp = [mean(filter(!isnan,Rt_unfiltered[(lb-ma_data_pts_lb_side):(lb+ma_data_pts_ub_side),1,1])) for lb=(ma_data_pts_lb_side+1):(Rt_final_timepoint-ma_data_pts_ub_side)]
+
+                # Smooth the smoothed data points
+                # E.g ma_width = 4. For timepoints 1-4, centralised average at 2.5.
+                # For timepoints 2-5, centralised average at 3.5.
+                # Smoothing these initial averages gives estimate at timepoint 3 (using ma_width = 4)
+                for ma_itr = 1:ma_length
+                    Rt_ma[1,ma_itr] = (Rt_ma_temp[ma_itr] + Rt_ma_temp[ma_itr+1])/2
+                end
+            end
         else
-            Rt_ma[1,:] = rollmean(replace(Rt_unfiltered[:,1,var_itr],NaN=>0.0), ma_width)
+            if ma_width%2 == 1
+                # Central moving average using odd number of data points
+                Rt_ma[1,:] = [mean(filter(!isnan,Rt_unfiltered[(lb-ma_data_pts_lb_side):(lb+ma_data_pts_ub_side),1,1,var_itr])) for lb=(ma_data_pts_lb_side+1):(Rt_final_timepoint-ma_data_pts_ub_side)]
+            else
+                # Central moving average using even number of data points
+                Rt_ma_temp = zeros(Float64, ma_length+1)
+                Rt_ma_temp = [mean(filter(!isnan,Rt_unfiltered[(lb-ma_data_pts_lb_side):(lb+ma_data_pts_ub_side),1,1,var_itr])) for lb=(ma_data_pts_lb_side+1):(Rt_final_timepoint-ma_data_pts_ub_side)]
+
+                # Smooth the smoothed data points
+                # E.g ma_width = 4. For timepoints 1-4, centralised average at 2.5.
+                # For timepoints 2-5, centralised average at 3.5.
+                # Smoothing these initial averages gives estimate at timepoint 3 (using ma_width = 4)
+                for ma_itr = 1:ma_length
+                    Rt_ma[1,ma_itr] = (Rt_ma_temp[ma_itr] + Rt_ma_temp[ma_itr+1])/2
+                end
+            end
         end
 
         for count=2:countfinal
             if variable_name=="mawidth"
-                # Central moving average
-                Rt_ma[count,:] = rollmean(replace(Rt_unfiltered[:,count,1],NaN=>0.0), ma_width)
+                if ma_width%2 == 1
+                    # Central moving average using odd number of data points
+                    Rt_ma[count,:] = [mean(filter(!isnan,Rt_unfiltered[(lb-ma_data_pts_lb_side):(lb+ma_data_pts_ub_side),count,1,1])) for lb=(ma_data_pts_lb_side+1):(Rt_final_timepoint-ma_data_pts_ub_side)]
+                else
+                    # Central moving average using even number of data points
+                    Rt_ma_temp = zeros(Float64, ma_length+1)
+                    Rt_ma_temp = [mean(filter(!isnan,Rt_unfiltered[(lb-ma_data_pts_lb_side):(lb+ma_data_pts_ub_side),count,1,1])) for lb=(ma_data_pts_lb_side+1):(Rt_final_timepoint-ma_data_pts_ub_side)]
+
+                    # Smooth the smoothed data points
+                    # E.g ma_width = 4. For timepoints 1-4, centralised average at 2.5.
+                    # For timepoints 2-5, centralised average at 3.5.
+                    # Smoothing these initial averages gives estimate at timepoint 3 (using ma_width = 4)
+                    for ma_itr = 1:ma_length
+                        Rt_ma[count,ma_itr] = (Rt_ma_temp[ma_itr] + Rt_ma_temp[ma_itr+1])/2
+                    end
+                end
             else
-                Rt_ma[count,:] = rollmean(replace(Rt_unfiltered[:,count,var_itr],NaN=>0.0), ma_width)
+                if ma_width%2 == 1
+                    # Central moving average using odd number of data points
+                    Rt_ma[count,:] = [mean(filter(!isnan,Rt_unfiltered[(lb-ma_data_pts_lb_side):(lb+ma_data_pts_ub_side),count,1,var_itr])) for lb=(ma_data_pts_lb_side+1):(Rt_final_timepoint-ma_data_pts_ub_side)]
+                    #plot!(p1,(ma_width+1):(n_timesteps-ma_width),Rt_ma[count,:],legend=false)
+                else
+                    # Central moving average using even number of data points
+                    Rt_ma_temp = zeros(Float64, ma_length+1)
+                    Rt_ma_temp = [mean(filter(!isnan,Rt_unfiltered[(lb-ma_data_pts_lb_side):(lb+ma_data_pts_ub_side),count,1,var_itr])) for lb=(ma_data_pts_lb_side+1):(Rt_final_timepoint-ma_data_pts_ub_side)]
+
+                    # Smooth the smoothed data points
+                    # E.g ma_width = 4. For timepoints 1-4, centralised average at 2.5.
+                    # For timepoints 2-5, centralised average at 3.5.
+                    # Smoothing these initial averages gives estimate at timepoint 3 (using ma_width = 4)
+                    for ma_itr = 1:ma_length
+                        Rt_ma[count,ma_itr] = (Rt_ma_temp[ma_itr] + Rt_ma_temp[ma_itr+1])/2
+                    end
+                end
             end
         end
 

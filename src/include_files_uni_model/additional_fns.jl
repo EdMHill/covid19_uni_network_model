@@ -719,34 +719,34 @@ elseif runset == "run_mass_testing_alter_adherence"
         end_adherence_idx = adherence_itr*n_configs_per_adherence_val
         adherence_config[start_adherence_idx:end_adherence_idx] .= adherence_vals[adherence_itr]
         for test_day_itr = 1:length(mass_test_desig_days)
-            selected_test_day = mass_test_desig_days[test_day_itr]
+            selected_test_days = [mass_test_desig_days[test_day_itr]] # Vector to match input type of Array{Int64,1}
+            n_test_days = length(selected_test_days)
             for on_campus_cov_itr = 1:length(on_campus_cov)
                 selected_on_campus_cov = on_campus_cov[on_campus_cov_itr]
                 for off_campus_cov_itr = 1:length(off_campus_cov)
                     selected_off_campus_cov = off_campus_cov[off_campus_cov_itr]
                     if (selected_on_campus_cov != 0.) || (selected_off_campus_cov != 0.)
-
                         # Initialise mass testing parameter fields for current configuration
                         for replicate_itr = 1:n_replicates
-                            n_tests_performed_vecs[replicate_itr] = [0]
-                            n_tests_positive_vecs[replicate_itr] = [0]
-                            n_all_isolations_caused_vecs[replicate_itr] = [0]
-                            n_hh_isolations_caused_vecs[replicate_itr] = [0]
-                            n_CT_isolations_caused_vecs[replicate_itr] = [0]
-                            n_prev_infected_tested_vecs[replicate_itr] = [0]
+                            n_tests_performed_vecs[replicate_itr] = zeros(Int64,n_test_days)
+                            n_tests_positive_vecs[replicate_itr] = zeros(Int64,n_test_days)
+                            n_all_isolations_caused_vecs[replicate_itr] = zeros(Int64,n_test_days)
+                            n_hh_isolations_caused_vecs[replicate_itr] = zeros(Int64,n_test_days)
+                            n_CT_isolations_caused_vecs[replicate_itr] = zeros(Int64,n_test_days)
+                            n_prev_infected_tested_vecs[replicate_itr] = zeros(Int64,n_test_days)
                         end
 
                         # Only set up configuration if a location has non-zero testing coverage
-                        mass_testing_config[config_itr] = mass_testing_params(designated_test_times = [selected_test_day],
-                                                                                on_campus_coverage_propn = [selected_on_campus_cov],
-                                                                                off_campus_coverage_propn = [selected_off_campus_cov],
+                        mass_testing_config[config_itr] = mass_testing_params(designated_test_times = selected_test_days,
+                                                                                on_campus_coverage_propn = selected_on_campus_cov*ones(Int64,n_test_days),
+                                                                                off_campus_coverage_propn = selected_off_campus_cov*ones(Int64,n_test_days),
+                                                                                n_mass_tests_performed = zeros(Int64,n_replicates),
                                                                                 n_tests_performed = deepcopy(n_tests_performed_vecs),
                                                                                 n_tests_positive = deepcopy(n_tests_positive_vecs),
                                                                                 n_all_isolations_caused = deepcopy(n_all_isolations_caused_vecs),
                                                                                 n_hh_isolations_caused = deepcopy(n_hh_isolations_caused_vecs),
                                                                                 n_CT_isolations_caused = deepcopy(n_CT_isolations_caused_vecs),
                                                                                 n_prev_infected_tested = deepcopy(n_prev_infected_tested_vecs))
-
                         # Increment config_itr
                         config_itr += 1
                     end

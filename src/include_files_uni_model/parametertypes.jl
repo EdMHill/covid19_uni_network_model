@@ -246,7 +246,7 @@ end
    CS_scale_transrisk::Array{Float64,1} = 0.2*ones(length(transrisk_cohort_mean))
 
    # Scale the infectiousness of all contacts
-   suscep_scaling = 0.8
+   suscep_scaling::Float64 = 0.8
 
    # probability of being asymptomatic
    probasymp_dist::Uniform{Float64} = Uniform(0.5,0.8)

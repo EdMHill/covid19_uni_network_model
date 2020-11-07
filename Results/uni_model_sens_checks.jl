@@ -14,12 +14,12 @@ using Plots, MAT, LinearAlgebra, Statistics
 
 # List of sensitivity configs to plot results for
 svty_variables = [# "RNGseed",
-                   "mawidth",
+                 # "mawidth",
                  # "trans_risk_no_interv",
                  # "probasymp_scale_no_interv",
                  # "transasymp_scale_no_interv",
                  # "suscep_scale_no_interv",
-                 # "baseline_no_interv",
+                  "No control simulations",
                  ]
 
 # Values used in sensitivity configs
@@ -28,8 +28,7 @@ svty_variable_ops = Dict("RNGseed" => [100],  #[100, 200, 300],
                             "trans_risk_no_interv" => [0.2,0.3,0.4,0.5],
                             "probasymp_scale_no_interv" => [0.5,0.6,0.7,0.8,0.9],
                             "transasymp_scale_no_interv" => [0.1,0.2,0.3,0.4,0.5,0.6],
-                            "baseline_no_interv" => [1],
-                            "suscep_scale_no_interv" => [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
+                            "No control simulations" => [1000]
                             )
 
 """
@@ -46,30 +45,48 @@ for svty_itr = 1:length(svty_variables)
     # Load sensitivity output file
     if (variable_name == "RNGseed") || (variable_name == "mawidth")
         #file=matopen("../uni_model_infection_output_run_no_interventions.mat","r")
-        file=matopen("uni_model_infection_output_run_one_run_baseline_nointerv_#1.mat","r")
+        file=matopen("../uni_model_infection_output_run_one_run_baseline_nointerv_#1.mat","r")
     elseif (variable_name == "trans_risk_no_interv")
-        file=matopen("uni_model_infection_output_trans_risk_scale_no_interv_#1.mat","r")
+        file=matopen("../uni_model_infection_output_trans_risk_scale_no_interv_#1.mat","r")
     elseif (variable_name == "probasymp_scale_no_interv")
-        file=matopen("uni_model_infection_output_probasymp_scale_no_interv_#1.mat","r")
+        file=matopen("../uni_model_infection_output_probasymp_scale_no_interv_#1.mat","r")
     elseif (variable_name == "transasymp_scale_no_interv")
-        file=matopen("uni_model_infection_output_transasymp_scale_no_interv_#1.mat","r")
+        file=matopen("../uni_model_infection_output_transasymp_scale_no_interv_#1.mat","r")
     elseif (variable_name =="suscep_scale_no_interv")
-        file=matopen("uni_model_infection_output_suscep_scale_no_interv_#1.mat","r")
-    elseif (variable_name == "baseline_no_interv")
-        file=matopen("uni_model_infection_output_run_one_run_baseline_nointerv_#1.mat","r")
+        file=matopen("../uni_model_infection_output_suscep_scale_no_interv_#1.mat","r")
+    elseif (variable_name == "No control simulations")
+        file=matopen("../uni_model_infection_output_run_one_run_baseline_nointerv_combined.mat","r")
     end
-    Rt_unfiltered = read(file,"Rt_save")
-    GT_init = read(file,"mean_init_generation_time_save")
-    Rt_init = read(file, "num_init_infected_save")
-    numinf = read(file,"numinf")
-    secondary_infs = read(file,"num_infected")
 
-    # Get transmission setting count variables
-    household_infection_count = read(file,"household_infection_count")
-    cohort_infection_count = read(file,"cohort_infection_count")
-    society_infection_count = read(file,"society_infection_count")
-    accom_dynamic_infection_count = read(file,"accom_dynamic_infection_count")
-    social_dynamic_infection_count = read(file,"social_dynamic_infection_count")
+    if (variable_name == "No control simulations")
+        Rt_unfiltered = read(file,"Rt_save_combined")
+        GT_init = read(file,"mean_init_generation_time_save_combined")
+        Rt_init = read(file, "num_init_infected_save_combined")
+        numinf = read(file,"numinf_combined")
+        secondary_infs = read(file,"num_infected_combined")
+
+        # Get transmission setting count variables
+        household_infection_count = read(file,"household_infection_count_combined")
+        cohort_infection_count = read(file,"cohort_infection_count_combined")
+        society_infection_count = read(file,"society_infection_count_combined")
+        accom_dynamic_infection_count = read(file,"accom_dynamic_infection_count_combined")
+        social_dynamic_infection_count = read(file,"social_dynamic_infection_count_combined")
+    else
+        Rt_unfiltered = read(file,"Rt_save")
+        GT_init = read(file,"mean_init_generation_time_save")
+        Rt_init = read(file, "num_init_infected_save")
+        numinf = read(file,"numinf")
+        secondary_infs = read(file,"num_infected")
+
+        # Get transmission setting count variables
+        household_infection_count = read(file,"household_infection_count")
+        cohort_infection_count = read(file,"cohort_infection_count")
+        society_infection_count = read(file,"society_infection_count")
+        accom_dynamic_infection_count = read(file,"accom_dynamic_infection_count")
+        social_dynamic_infection_count = read(file,"social_dynamic_infection_count")
+    end
+
+
 
     # Close file
     close(file)
@@ -115,7 +132,7 @@ for svty_itr = 1:length(svty_variables)
         if variable_name=="mawidth"
             ma_width = variable_ops[var_itr]
         else
-            ma_width = 14
+            ma_width = 7
         end
 
         # Set default population size
@@ -147,12 +164,11 @@ for svty_itr = 1:length(svty_variables)
             ma_data_pts_plot_offset_ub = (ma_width÷2)
         end
 
-
         # Get number of simn replicates in use
         if variable_name=="mawidth"
-            countfinal = length(Rt_unfiltered[1,:,1])
+            countfinal = length(Rt_unfiltered[1,:,1,1])
         else
-            countfinal = length(Rt_unfiltered[1,:,var_itr])
+            countfinal = length(Rt_unfiltered[1,:,1,var_itr])
         end
 
         # Calculate moving average Rt
@@ -283,7 +299,7 @@ for svty_itr = 1:length(svty_variables)
 
         # Set up dummy legend
         plot!(p1,[],[],color = "black",linewidth=1.5,label="median",legend=(0.8,0.8), # Bottom left corner of legend is placed at (x,y).
-                        legendfontsize=3)
+                        legendfontsize=4)
         plot!(p1,[],[],
                     fillrange=[NaN NaN],
                     fillalpha=0.8,
@@ -314,6 +330,7 @@ for svty_itr = 1:length(svty_variables)
         # Other plots unless MA svty
         if variable_name!="mawidth"
 
+        if (variable_name != "No control simulations")
             # R0. Get mean per replicate
             Rt_init_mean = zeros(n_replicates)
             for replicate_itr = 1:n_replicates
@@ -328,6 +345,7 @@ for svty_itr = 1:length(svty_variables)
                             framestyle = :box,
                             #grid = false
                             )
+        end
 
             # Mean generation time
             p3 = histogram(GT_init[1,:,var_itr],
@@ -382,19 +400,14 @@ for svty_itr = 1:length(svty_variables)
                     #grid = false
                     )
 
-            # Option to look at variance in number of secondary infections caused
-
-            # if variable_name == "clustering"
-            #     secondary_inf_variance = [var(filter(x->x!=0,secondary_infs[var_itr][:,i])) for i=1:100]
-            #
-            #     p6 = histogram(secondary_inf_variance,
-            #                     legend=false,
-            #                     xlabel="Variance",
-            #                     normed=true)
-            # end
-
-            layout = @layout [a ; b ; c  d; e f]
-            fig = plot(p1,p4,p2,p3,p7,p6, layout=layout, size=(450,600))
+            # Set up plot space based on variable name
+            if (variable_name == "No control simulations")
+                layout = @layout [a ; c ; e f]
+                fig = plot(p1,p4,p7,p6, layout=layout, size=(450,600))
+            else
+                layout = @layout [a ; b ; c  d; e f]
+                fig = plot(p1,p4,p2,p3,p7,p6, layout=layout, size=(450,600))
+            end
 
         else
             fig = plot(p1, size=(450,200), dpi = 300)

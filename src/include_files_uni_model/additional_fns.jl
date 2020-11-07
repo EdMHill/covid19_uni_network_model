@@ -324,16 +324,16 @@ CT_engagement = 0.7
 adherence = 0.7
 
 # probability of being asymptomatic
-probasymp_dist = Uniform(0.6,0.8)  # 0.9
+probasymp_dist = Uniform(0.5,0.8)  # 0.9
 
 # Amend infection potential of asymptomatics
-asymp_trans_scaling_dist::Uniform{Float64} = Uniform(0.4,0.7)
+asymp_trans_scaling_dist::Uniform{Float64} = Uniform(0.3,0.7)
 
 # change scaling of infection parameter for non-household contacts
 scaling = 0.34
 
 # Scale the infectiousness of all contacts
-suscep_scaling = 0.4
+suscep_scaling = 0.8
 
 # At beginning of simulation, the proportion of student population that has
 # been infected previously

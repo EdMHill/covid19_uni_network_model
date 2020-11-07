@@ -217,7 +217,7 @@ end
    # Also add in the possibility that individuals are asymptomatic.
    # In that case, their infection potential is lower but they dont isolate.
    # asymp_trans_scaling::Float64 = 0.165
-   asymp_trans_scaling_dist::Uniform{Float64} = Uniform(0.4,0.7)
+   asymp_trans_scaling_dist::Uniform{Float64} = Uniform(0.3,0.7)
 
    # probability of transmission within a household, based on secondary attack rate
    # Can differ per household group. Values for household size of 2, 3, 4, 5 or more.
@@ -245,11 +245,11 @@ end
    # One would mean no effect on the transmission risk
    CS_scale_transrisk::Array{Float64,1} = 0.2*ones(length(transrisk_cohort_mean))
 
-   # Captures the susceptibility of the 20-29 yr age group (from the ODE model)
-   suscep_scaling = 1
+   # Scale the infectiousness of all contacts
+   suscep_scaling = 0.8
 
    # probability of being asymptomatic
-   probasymp_dist::Uniform{Float64} = Uniform(0.6,0.8)
+   probasymp_dist::Uniform{Float64} = Uniform(0.5,0.8)
 
    # Flag variable indicating if self-isolation is an active measure
    isolation::Int64 = 1

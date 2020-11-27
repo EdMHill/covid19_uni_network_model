@@ -1763,10 +1763,9 @@ end
 
 function set_infection_related_times!(time_to_symps::Array{Int64,1},states::student_states,
     isolation::Int64,adherence::Float64,csum_delay_adherence::Array{Float64,1},
-    d_latent::Distribution,n_students::Int64,rng::MersenneTwister)
+    d_incub::Distribution,n_students::Int64,rng::MersenneTwister)
 
-    time_to_symps .= ceil.(rand(rng,d_latent,n_students)) # time to symptoms
-    # assume that infectiousness starts 2 days before and ends 7 days after symptoms
+    time_to_symps .= ceil.(rand(rng,d_incub,n_students)) # time to symptoms
     # (for asymptomatics, the same from a silent start of "symptoms")
 
     ## uncomment below to change default times

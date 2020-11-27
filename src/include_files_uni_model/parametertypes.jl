@@ -264,8 +264,8 @@ end
    n_social_mean_workday::Int64 = 1
    n_social_mean_nonworkday::Int64 = 5
 
-   # Distribution of latent period
-   d_latent::Distribution = Erlang(6,0.88)
+   # Distribution of incubation period
+   d_incub::Distribution = Erlang(6,0.88)
 
    # Distribution of infectiousness
    dist_infectivity::Array{Float64,1} =  [0.0369, 0.0491, 0.0835, 0.1190, 0.1439, 0.1497, 0.1354, 0.1076, 0.0757, 0.0476, 0.0269, 0.0138, 0.0064, 0.0044] # Corrected He (4 day pre-symptomatic period) & 10 day symptomatic period

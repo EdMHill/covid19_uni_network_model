@@ -93,15 +93,15 @@ seed_initial_states_fn = getfield(Main, s) #Make Symbol a callable function
 runsets = eval(Meta.parse(args[9]))
 
 """
-Set up latent & infectivity distributions
+Set up incubation & infectivity distributions
 """
 
-# If needed, set up a different latent period distribution
+# If needed, set up a different incubation period distribution
 # Default: Erlang(6,0.88)
-# d_latent_alt = LogNormal(log(5.2), log(1.4))
-    # If using alternative then need to pass d_latent_alt into infection_params creation:
+# d_incub_alt = LogNormal(log(5.2), log(1.4))
+    # If using alternative then need to pass d_incub_alt into infection_params creation:
     #e.g. infection_parameters = infection_params(transrisk=0.75*ones(n_cohorts),
-    #                                                  d_latent = d_latent_alt)
+    #                                                d_incub = d_incub_alt)
 
 # If needed, set a different distribution of infectivity from the default
 # Will then need to pass dist_infectivity into infection_params creation:

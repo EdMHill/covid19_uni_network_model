@@ -110,7 +110,7 @@ function uni_network_run(RNGseed::Int64,
             CS_scale_transrisk, suscep_scaling,
             probasymp_dist, isolation, symp_isoltime, asymp_isoltime, household_isoltime, adherence,
             n_social_mean_workday,n_social_mean_nonworkday,
-            d_latent, dist_infectivity, delay_adherence_pmf,
+            d_incub, dist_infectivity, delay_adherence_pmf,
             delay_household_infection_pmf,
             recov_propn = infection_parameters
     @unpack dynamic_conts_mean, dynamic_conts_sd, max_contacts_social_dynamic = network_parameters
@@ -386,7 +386,7 @@ function uni_network_run(RNGseed::Int64,
         Set course of infection times
         """
         # set times to infection etc.: returns inftime, symptime, lattime, hh_isolation and delay_adherence
-        set_infection_related_times!(time_to_symps,states,isolation,adherence,csum_delay_adherence,d_latent,n_students,rng)
+        set_infection_related_times!(time_to_symps,states,isolation,adherence,csum_delay_adherence,d_incub,n_students,rng)
 
         """
         Seed non-susceptible disease states

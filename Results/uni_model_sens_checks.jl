@@ -350,7 +350,7 @@ for svty_itr = 1:length(svty_variables)
             # Mean generation time
             p3 = histogram(GT_init[1,:,var_itr],
                             legend=false,
-                            xlabel="Gen. time",
+                            xlabel="Mean generation time",
                             normalize = :probability,
                             widen=false,
                             framestyle = :box,
@@ -360,7 +360,7 @@ for svty_itr = 1:length(svty_variables)
             # Total proportion infected
             p4 = histogram(numinf[end,:,var_itr]./cmax,
                             legend=false,
-                            xlabel="Total I",
+                            xlabel="Proportion infected",
                             normalize = :probability,
                             widen=false,
                             framestyle = :box,

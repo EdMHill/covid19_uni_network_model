@@ -142,7 +142,7 @@ function carry_out_mass_tests_in_location(time::Int64,
    @unpack perform_CT_from_infector, prob_backwards_CT = CT_parameters
    @unpack infected_by, new_rehoused = output
    @unpack designated_test_times, on_campus_coverage_propn,
-            off_campus_coverage_propn, asymp_test_result_false_negative_vec,
+            off_campus_coverage_propn, asymp_test_detection_prob_vec,
             n_mass_tests_performed,
             n_tests_performed, n_tests_positive,
             n_all_isolations_caused, n_hh_isolations_caused, n_CT_isolations_caused,
@@ -179,15 +179,28 @@ function carry_out_mass_tests_in_location(time::Int64,
                # Determine whether test result will return a negative outcome
                # - Get time since student_itr became infected
                # - Given time since infected, look up probability case will return negative test result
-               if states.timeinf[current_node_ID]>0
-                  tot_time_inf = states.timeinf[current_node_ID]
+               # if states.timeinf[current_node_ID]>0
+               #    tot_time_inf = states.timeinf[current_node_ID]
+               # else
+               #    tot_time_inf = states.timesymp[current_node_ID]+states.inftime
+               # end
+               if states.timelat[current_node_ID]>0
+                  tot_time_inf = states.timelat[current_node_ID]
+               elseif states.timeinf[current_node_ID]>0
+                  tot_time_inf = states.timeinf[current_node_ID] + states.lattime[current_node_ID]
                else
-                  tot_time_inf = states.timesymp[current_node_ID]+states.inftime
+                  tot_time_inf = states.timesymp[current_node_ID]+ states.inftime + states.lattime[current_node_ID]
                end
-               test_false_negative_prob = asymp_test_result_false_negative_vec[tot_time_inf]
+
+               # Get relevant sensitivity value based on time since infection
+               # Cap total infection time at length of detection prob vector
+               if tot_time_inf > length(asymp_test_detection_prob_vec)
+                  tot_time_inf = length(asymp_test_detection_prob_vec)
+               end
+               test_detection_prob = asymp_test_detection_prob_vec[tot_time_inf]
 
                # Bernoulli trial to determine if false negative returned
-               if rand(rng) > test_false_negative_prob
+               if rand(rng) < test_detection_prob
                   # If not false negative, gather contacts
                   CT_vars.Inds_to_be_contacted[current_node_ID] = Int64[] # Initialise vector to store contacts
                   if (CT_vars.Engage_with_CT[current_node_ID] == true)
@@ -323,7 +336,7 @@ function perform_mass_test!(mass_testing_parameters::mass_testing_params,
 
    # Unpack fields from mass testing parameters
    @unpack designated_test_times, on_campus_coverage_propn,
-            off_campus_coverage_propn, asymp_test_result_false_negative_vec,
+            off_campus_coverage_propn, asymp_test_detection_prob_vec,
             n_mass_tests_performed,
             n_tests_performed, n_tests_positive,
             n_all_isolations_caused, n_hh_isolations_caused, n_CT_isolations_caused,
@@ -338,6 +351,7 @@ function perform_mass_test!(mass_testing_parameters::mass_testing_params,
    # Check if mass testing due to be carried out
    if next_mass_test_count <= length(designated_test_times)
       next_mass_test_time = designated_test_times[next_mass_test_count]
+
       if next_mass_test_time == time
          # Mass testing to be carried out
 
@@ -362,7 +376,6 @@ function perform_mass_test!(mass_testing_parameters::mass_testing_params,
          record_test_postive = zeros(Int64,n_students)
          record_hh_isolated = zeros(Int64,n_students)
          record_CT_isolated = zeros(Int64,n_students)
-
          # Draw up lists of students to receive a test & check test result
          # On-campus resident check first. Then off-campus.
          carry_out_mass_tests_in_location(time,
@@ -405,7 +418,6 @@ function perform_mass_test!(mass_testing_parameters::mass_testing_params,
                                           record_hh_isolated,
                                           record_CT_isolated,
                                           rehouse_strat_active)
-
          # Compute the number of additional isolations that occurred due to mass testing
          # Increment the numbers of tests performed in this mass test instance by 1
          for student_itr = 1:n_students
@@ -424,6 +436,7 @@ function perform_mass_test!(mass_testing_parameters::mass_testing_params,
                end
             end
          end
+
          # Update counter of mass tests performed
          n_mass_tests_performed[replicate_ID] += 1
       end

@@ -84,9 +84,11 @@ end
    # Set number of days before symptoms CT will attempt to capture
    CT_days_before_symptom_included::Int64 = 2
 
-   # Propotions of tests returning a false negative outcome
+   # Propotions of tests that correctly detect infection (sensitivity)
    # Entry per day since infected
-   test_false_negative_vec::Array{Float64,1} = 0.13*ones(20)
+   test_detection_prob_vec::Array{Float64,1} = [0.,0.11,0.59,0.785,0.83,0.845,0.84,0.82,0.79,0.76,  # Days 1-10
+                                                0.72,0.68,0.64,0.59,0.54,0.485,0.445,0.405,0.37,0.335, # Days 11-20
+                                                0.30,0.27,0.24,0.22,0.20,0.18,0.16,0.15,0.14,0.13] # Days 21-30
 
    # Amount of time spent in isolation if contact traced
    CT_caused_isol_limit::Int64 = 14
@@ -246,7 +248,7 @@ end
    CS_scale_transrisk::Array{Float64,1} = 0.2*ones(length(transrisk_cohort_mean))
 
    # Scale the infectiousness of all contacts
-   suscep_scaling::Float64 = 0.8
+   suscep_scaling::Float64 = 1.
 
    # probability of being asymptomatic
    probasymp_dist::Uniform{Float64} = Uniform(0.5,0.8)
@@ -541,8 +543,10 @@ end
    designated_test_times::Array{Int64,1} = [0] # Timesteps on which mass testing will take place. Entry per mass testing event.
    on_campus_coverage_propn::Array{Float64,1} = [1.] # On campus residents, coverage.
    off_campus_coverage_propn::Array{Float64,1} = [1.] # Off campus residents, coverage.
-   asymp_test_result_false_negative_vec::Array{Float64,1} = 0.1*ones(20)   # Specify chance of a "true postive" being misclassified
-   n_mass_tests_performed::Array{Int64,1} = [0]          # Track the number of mass tests instances. Entry per replicate.
+   asymp_test_detection_prob_vec::Array{Float64,1} = [0.,0.11,0.59,0.785,0.83,0.845,0.84,0.82,0.79,0.76,  # Days 1-10
+                                                            0.72,0.68,0.64,0.59,0.54,0.485,0.445,0.405,0.37,0.335, # Days 11-20
+                                                            0.30,0.27,0.24,0.22,0.20,0.18,0.16,0.15,0.14,0.13] # Days 21-30
+   n_mass_tests_performed::Array{Int64,1} = [0]         # Track the number of mass tests instances.  Entry per replicate.
    n_tests_performed::Array{Array{Int64,1},1} = Array{Int64,1}[]        # Track the number of tests performed in each mass testing instance. Vector per replicate.
    n_tests_positive::Array{Array{Int64,1},1} = Array{Int64,1}[]         # Track the number of positive tests in each mass testing instance. Vector per replicate.
    n_all_isolations_caused::Array{Array{Int64,1},1} = Array{Int64,1}[]  # Track the number of isolations that result from the mass testing. Vector per replicate.

@@ -95,7 +95,7 @@ function uni_network_run(RNGseed::Int64,
      Unpack required variables
      """
     if contact_tracing_active==true
-        @unpack CT_engagement, CT_delay_until_test_result_pmf, CT_days_before_symptom_included, test_false_negative_vec,
+        @unpack CT_engagement, CT_delay_until_test_result_pmf, CT_days_before_symptom_included, test_detection_prob_vec,
             CT_caused_isol_limit, dynamic_contacts_recalled_propn, social_contacts_recalled_propn, prob_backwards_CT,
             perform_CT_from_infector, infector_engage_with_CT_prob = CT_parameters
     end
@@ -726,13 +726,13 @@ function uni_network_run(RNGseed::Int64,
 
                     # find the total time infectious
                     if states.timeinf[student_itr]>0
-                        tot_time_inf = states.timeinf[student_itr]
+                        tot_time_infectious = states.timeinf[student_itr]
                     else
-                        tot_time_inf = states.timesymp[student_itr]+states.inftime
+                        tot_time_infectious = states.timesymp[student_itr]+states.inftime
                     end
 
                     # find the infectiousness
-                    infectiousness = dist_infectivity[tot_time_inf]
+                    infectiousness = dist_infectivity[tot_time_infectious]
                     current_student = student_info[student_itr]
                     current_study_work_type_ID = student_info[student_itr].cohort_ID
                     if states.asymp[student_itr]>0 # Asymptomatic
@@ -877,15 +877,19 @@ function uni_network_run(RNGseed::Int64,
                             # Determine whether test result will return a negative outcome
                             # - Get time since student_itr became infected
                             # - Given time since infected, look up probability case will return negative test result
-                            if states.timeinf[student_itr]>0
-                                tot_time_inf = states.timeinf[student_itr]
+                            if states.timelat[student_itr]>0
+                                tot_time_inf = states.timelat[student_itr]
+                            elseif states.timeinf[student_itr]>0
+                                tot_time_inf = states.timeinf[student_itr] + states.lattime[student_itr]
                             else
-                                tot_time_inf = states.timesymp[student_itr]+states.inftime
+                                tot_time_inf = states.timesymp[student_itr]+ states.inftime + states.lattime[student_itr]
                             end
-                            test_false_negative_prob = test_false_negative_vec[tot_time_inf]
+
+                            # Get relevant sensitivity value based on time since infection
+                            test_detection_prob = test_detection_prob_vec[tot_time_inf]
 
                             # Bernoulli trial to determine if false negative returned
-                            if rand(rng) < test_false_negative_prob
+                            if rand(rng) < (1 - test_detection_prob)
                                 CT_vars.Test_result_false_negative[student_itr] = true
                             end
 
@@ -970,7 +974,8 @@ function uni_network_run(RNGseed::Int64,
                                         # Check if individual will adhere to guidance
                                         # If so, they self-isolate
                                         if states.hh_isolation[recallable_contact_ID] == 1
-                                            states.timeisol_CTcause[recallable_contact_ID] = 1
+                                            # Time needed to spend in isolation reduced by test result delay time for index case
+                                            states.timeisol_CTcause[recallable_contact_ID] = 1 + CT_vars.CT_delay_until_test_result[student_itr]
                                         end
                                     end
 

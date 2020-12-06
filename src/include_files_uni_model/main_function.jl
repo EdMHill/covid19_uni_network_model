@@ -659,7 +659,7 @@ function uni_network_run(RNGseed::Int64,
             for student_itr = 1:n_students
                 # Record whether the individual is in isolation on current day
                 if (isolation>0) &&
-                    ((states.timeisol[student_itr]>0) || (states.symp_timeisol[student_itr]>0) ||
+                    ((states.timeisol[student_itr]>0) || (states.symp_timeisol[student_itr]>0) || (states.asymp_timeisol[student_itr]>0) ||
                        (states.timeisol_CTcause[student_itr]>0) || (student_info[student_itr].household_info.lockdown_status == true))
                     # Default value is 0. So only update if node is in isolation for any reason
                     contacts.daily_record_inisol[time,student_itr] = 1

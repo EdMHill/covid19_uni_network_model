@@ -877,16 +877,14 @@ function uni_network_run(RNGseed::Int64,
                             # Determine whether test result will return a negative outcome
                             # - Get time since student_itr became infected
                             # - Given time since infected, look up probability case will return negative test result
-                            if states.timelat[student_itr]>0
-                                tot_time_inf = states.timelat[student_itr]
-                            elseif states.timeinf[student_itr]>0
-                                tot_time_inf = states.timeinf[student_itr] + states.lattime[student_itr]
-                            else
-                                tot_time_inf = states.timesymp[student_itr]+ states.inftime + states.lattime[student_itr]
-                            end
+                            tot_time_inf = time - states.acquired_infection[student_itr]
 
-                            # Get relevant sensitivity value based on time since infection
-                            test_detection_prob = test_detection_prob_vec[tot_time_inf]
+                            # Get relevant test sensitivity value based on time since infection
+                            if tot_time_inf == 0
+                                test_detection_prob = 0.
+                            else
+                                test_detection_prob = test_detection_prob_vec[tot_time_inf]
+                            end
 
                             # Bernoulli trial to determine if false negative returned
                             if rand(rng) < (1 - test_detection_prob)

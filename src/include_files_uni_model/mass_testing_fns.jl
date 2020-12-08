@@ -173,31 +173,26 @@ function carry_out_mass_tests_in_location(time::Int64,
             end
 
             # Check if in pre-symptomatic phase, or asymptomatic in subsequent phase
-            if (states.timeinf[current_node_ID]>0) ||
+            if (states.timelat[current_node_ID]>0) || (states.timeinf[current_node_ID]>0) ||
                ( (states.timesymp[current_node_ID]>0) && (states.asymp[current_node_ID]==1) )
 
                # Determine whether test result will return a negative outcome
-               # - Get time since student_itr became infected
+               # - Get time since individual became infected
                # - Given time since infected, look up probability case will return negative test result
-               # if states.timeinf[current_node_ID]>0
-               #    tot_time_inf = states.timeinf[current_node_ID]
-               # else
-               #    tot_time_inf = states.timesymp[current_node_ID]+states.inftime
-               # end
-               if states.timelat[current_node_ID]>0
-                  tot_time_inf = states.timelat[current_node_ID]
-               elseif states.timeinf[current_node_ID]>0
-                  tot_time_inf = states.timeinf[current_node_ID] + states.lattime[current_node_ID]
-               else
-                  tot_time_inf = states.timesymp[current_node_ID]+ states.inftime + states.lattime[current_node_ID]
-               end
+               tot_time_inf = time - states.acquired_infection[current_node_ID]
 
                # Get relevant sensitivity value based on time since infection
                # Cap total infection time at length of detection prob vector
                if tot_time_inf > length(asymp_test_detection_prob_vec)
                   tot_time_inf = length(asymp_test_detection_prob_vec)
                end
-               test_detection_prob = asymp_test_detection_prob_vec[tot_time_inf]
+
+               # Get relevant test sensitivity value based on time since infection
+               if tot_time_inf == 0
+                  test_detection_prob = 0.
+               else
+                  test_detection_prob = asymp_test_detection_prob_vec[tot_time_inf]
+               end
 
                # Bernoulli trial to determine if false negative returned
                if rand(rng) < test_detection_prob

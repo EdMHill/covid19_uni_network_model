@@ -39,18 +39,18 @@ end
 
 # Household parameter type to have information on the household the student is in
 # Whether on-campus of off-campus, location
-# Particularly relevant to on-campus accomodation:
+# Particularly relevant to on-campus accommodation:
 # Halls >  Blocks > Floors > Households
 @with_kw mutable struct household_params
    household_ID::Int64 = 0        # Household the individual has been assigned to. ID for the global system
-   on_campus_accom::Bool = true   # Whether accomodation is on campus (true) or off campus (false)
+   on_campus_accom::Bool = true   # Whether accommodation is on campus (true) or off campus (false)
    location::String = "Campus"    # name of location where student is living
-   hall_ID::Int64 = 0             # Relevant to on-campus accomodation (likewise for block_ID, floor_ID, household_ID_within_block)
+   hall_ID::Int64 = 0             # Relevant to on-campus accommodation (likewise for block_ID, floor_ID, household_ID_within_block)
    block_ID::Int64 = 0
    floor_ID::Int64 = 0
    household_ID_within_block::Int64 = 0
-   lockdown_status::Bool = false  # Specifies if accomodation is on lockdown or not. If so, non-accom f2f contact not permitted.
-   ensuite_flag::Bool = false    # Whether the accomodation is ensuite bathroom (true) or communal bathroom (false)
+   lockdown_status::Bool = false  # Specifies if accommodation is on lockdown or not. If so, non-accom f2f contact not permitted.
+   ensuite_flag::Bool = false    # Whether the accommodation is ensuite bathroom (true) or communal bathroom (false)
 end
 
 # Track individual student details.
@@ -158,10 +158,10 @@ end
    # Per node, household contacts
    household_contacts::Array{Array{Int64,1},1} = Array{Int64,1}[]
 
-   # Per node, a record of dynamic accomodation contacts made on each day
-   # Relevant to those in on-campus accomodation only.
+   # Per node, a record of dynamic accommodation contacts made on each day
+   # Relevant to those in on-campus accommodation only.
    # Three dimensions of vectors. Row per timestep, column per accom level, slice per student
-   dynamic_accomodation_contacts::Array{Array{Int64,1},3} = Array{Array{Int64,1},3}(undef,0,0,0)
+   dynamic_accommodation_contacts::Array{Array{Int64,1},3} = Array{Array{Int64,1},3}(undef,0,0,0)
 
    # Students in each household < floor < block < hall
    household_member_list::Array{Array{Array{Array{Array{Int64,1},1},1},1},1} = Array{Array{Array{Array{Array{Int64,1},1},1},1},1}(undef,0)
@@ -362,7 +362,7 @@ end
    # Degree distribution of dynamic social contacts
    dynamic_social_contact_degree_distribution::Array{Distribution,2} = [Distributions.LogNormal(1.646,1.211) Distributions.LogNormal(1.590,1.128)]
 
-   # Associated with contacts within broader accomodation units
+   # Associated with contacts within broader accommodation units
    contact_prob_floor_level::Float64 = 0.1
    contact_prob_block_level::Float64 = 0.05
    contact_prob_hall_level::Float64 = 0.
@@ -441,7 +441,7 @@ end
    num_CT::Array{Int64,2} = zeros(Int64,endtime+1,countfinal) # total number of recallable contacts
    num_infected::Array{Int64,2} = zeros(Int64,n_students,countfinal) # number of infections caused by that node
    social_dynamic_infection_count::Array{Int64,2} = zeros(Int64,endtime+1,countfinal) # number infections over social dynamic links
-   accomodation_dynamic_infection_count::Array{Int64,2} = zeros(Int64,endtime+1,countfinal) # number infections over dynamic on-campus accomodation links
+   accommodation_dynamic_infection_count::Array{Int64,2} = zeros(Int64,endtime+1,countfinal) # number infections over dynamic on-campus accommodation links
    household_infection_count::Array{Int64,2} = zeros(Int64,endtime+1,countfinal) # number infections occuring within household
    num_init_infected::Array{Array{Int64,1}} = Array{Array{Int64,1}}(undef,countfinal) # number of infections caused by the initially infected nodes
    Rt::Array{Float64,2} = zeros(Float64,endtime+1,countfinal) # real time R value (number of secondary infections caused by nodes that were newly infected on that day)
@@ -467,7 +467,7 @@ end
    num_symp_isolating::Array{Int64,2} = zeros(Int64,endtime+1,countfinal) # number of individuals isolating due to symptoms at each timepoint
    num_asymp_isolating::Array{Int64,2} = zeros(Int64,endtime+1,countfinal) # number of individuals isolating due to symptoms at each timepoint
    num_isolating_CTcause::Array{Int64,2} = zeros(Int64,endtime+1,countfinal) # number of individuals isolating as a contact of a positive test
-   num_accom_lockdown_isolating::Array{Int64,2} = zeros(Int64,endtime+1,countfinal) # number of individuals isolating due to accomodation lockdown
+   num_accom_lockdown_isolating::Array{Int64,2} = zeros(Int64,endtime+1,countfinal) # number of individuals isolating due to accommodation lockdown
 
    # 2D outputs. Rehousing related
    new_rehoused::Array{Int64,2} = zeros(Int64,endtime+1,countfinal) # new instances of students being rehoused

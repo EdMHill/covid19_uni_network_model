@@ -276,7 +276,7 @@ function carry_out_mass_tests_in_location(time::Int64,
                          student_info[current_node_ID].no_contacts_status = true
 
                          # Update rehoused output variable if living in communal
-                         # bathroom type accomodation
+                         # bathroom type accommodation
                          if (student_info[current_node_ID].household_info.ensuite_flag == false)
                              altered_time_idx = time + 2  # +1 for first entry being time 0. +1 for rehousing effectively taking place the next timestep.
                              new_rehoused[altered_time_idx,replicate_ID] += 1

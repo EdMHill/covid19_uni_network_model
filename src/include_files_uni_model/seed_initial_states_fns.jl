@@ -54,7 +54,7 @@ function choose_from_all_popn(rng::MersenneTwister,
       valid_asymp_node = false
       while valid_asymp_node == false
 
-          if (states.timeinf[chosen_node] == 1) # Chosen node already selected as an asymptomatic
+          if (states.timeinf[chosen_node] > 0) # Chosen node already selected as an asymptomatic
              # Resample
              chosen_node = ceil(Int64,rand(rng)*n_nodes)
           else
@@ -106,7 +106,7 @@ function choose_from_all_popn(rng::MersenneTwister,
            valid_symp_node = false
            while valid_symp_node == false
                if (states.asymp[chosen_node] == 1) ||  # Chosen node does not have symptomatic status.
-                       (states.timeinf[chosen_node] == 1) # Chosen node already selected as infectious
+                       (states.timeinf[chosen_node] > 0) # Chosen node already selected as infectious
                   # Resample
                   chosen_node = ceil(Int64,rand(rng)*n_nodes)
                else
@@ -149,8 +149,8 @@ function choose_from_all_popn(rng::MersenneTwister,
       # Check if node already set to be an initial infected or initial latent
       valid_latent_node = false
       while valid_latent_node == false
-             if (states.timeinf[chosen_latent_node] == 1) ||  # Initial infected condition
-                  (states.timelat[chosen_latent_node] == 1)  # Initial latent condition
+             if (states.timeinf[chosen_latent_node] > 0) ||  # Initial infected condition
+                  (states.timelat[chosen_latent_node] > 0)  # Initial latent condition
                   # Redraw sample if already set to be an initial infected or initial recovered
                   chosen_latent_node = ceil(Int64,rand(rng)*n_nodes)
              else
@@ -183,7 +183,7 @@ function choose_from_all_popn(rng::MersenneTwister,
 
           # Update states variables
           states.timelat[chosen_latent_node] = latent_time_elapsed
-          states.acquired_infection[chosen_latent_node] = latent_time_elapsed - latent_period_length
+          states.acquired_infection[chosen_latent_node] = -(latent_time_elapsed - 1)
       end
 
       # Check if infection will be asymptomatic
@@ -200,8 +200,8 @@ function choose_from_all_popn(rng::MersenneTwister,
        # or initial recovered
        valid_node = false
        while valid_node == false
-           if states.timeinf[chosen_rec_node] == 1 ||  # Initial infected condition
-                 states.timelat[chosen_rec_node] == 1 || # Initial latent condition
+           if (states.timeinf[chosen_rec_node] > 0) ||  # Initial infected condition
+                 (states.timelat[chosen_rec_node] > 0) || # Initial latent condition
                ( (states.timelat[chosen_rec_node] == -1) && # Initial recovered conditions
                    (states.timeinf[chosen_rec_node] == -1) &&
                    (states.timesymp[chosen_rec_node] == -1) )

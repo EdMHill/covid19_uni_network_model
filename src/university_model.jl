@@ -433,7 +433,7 @@ for run_it = 1:length(runsets)
                         num_isolating_CTcause,
                         num_accom_lockdown_isolating,
                         num_CT, num_infected, social_dynamic_infection_count,
-                        accomodation_dynamic_infection_count, household_infection_count,
+                        accommodation_dynamic_infection_count, household_infection_count,
                         var_num_infected, num_init_infected, mean_init_generation_time,
                         Rt,
                         new_rehoused, current_rehoused,
@@ -474,7 +474,7 @@ for run_it = 1:length(runsets)
                        num_accom_lockdown_isolating,
                        num_CT, num_infected,
                        social_dynamic_infection_count,
-                       accomodation_dynamic_infection_count, household_infection_count,
+                       accommodation_dynamic_infection_count, household_infection_count,
                        var_num_infected,
                        num_init_infected, mean_init_generation_time, Rt,
                        new_rehoused, current_rehoused,
@@ -503,7 +503,7 @@ for run_it = 1:length(runsets)
                 num_infected_save[:,:,it] = num_infected
             end
             social_dynamic_infection_count_save[:,:,it] = social_dynamic_infection_count
-            accom_dynamic_infection_count_save[:,:,it] = accomodation_dynamic_infection_count
+            accom_dynamic_infection_count_save[:,:,it] = accommodation_dynamic_infection_count
             household_infection_count_save[:,:,it] = household_infection_count
             var_num_infected_save[1,:,it] = var_num_infected
             num_init_infected_save[it] = num_init_infected

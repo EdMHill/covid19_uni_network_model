@@ -67,7 +67,7 @@ function uni_network_run(RNGseed::Int64,
 #         - Generate study/cohort contacts, society contacts. (supporting functions in network_generation_fns.jl)
 #         - Assign households and household contacts (supporting functions in network_generation_fns.jl)
 #         - Generate social dynamic contacts (supporting functions in network_generation_fns.jl)
-#         - Generate on-campus accomodation dynamic contacts (supporting functions in network_generation_fns.jl)
+#         - Generate on-campus accommodation dynamic contacts (supporting functions in network_generation_fns.jl)
 #         - Generate household specific transmission (supporting functions in network_generation_fns.jl)
 #         - Initialise variables
 #         - Iterate over replicates
@@ -216,10 +216,10 @@ function uni_network_run(RNGseed::Int64,
     contacts.dynamic_social_contacts = dynamic_social_contacts
 
     """
-    Generate on-campus accomodation dynamic contacts
+    Generate on-campus accommodation dynamic contacts
     """
 
-    dynamic_accomodation_contacts = @time generate_dynamic_campus_accom_contacts(RNGseed,
+    dynamic_accommodation_contacts = @time generate_dynamic_campus_accom_contacts(RNGseed,
                                                                                     n_students,
                                                                                     endtime,
                                                                                     student_info,
@@ -227,7 +227,7 @@ function uni_network_run(RNGseed::Int64,
                                                                                     contacts)
 
     # Assign to contacts parameter structure
-    contacts.dynamic_accomodation_contacts = dynamic_accomodation_contacts
+    contacts.dynamic_accommodation_contacts = dynamic_accommodation_contacts
 
 
     """
@@ -560,7 +560,7 @@ function uni_network_run(RNGseed::Int64,
                                 student_info[student_itr].no_contacts_status = true
 
                                 # Update rehoused output variable if living in communal
-                                # bathroom type accomodation
+                                # bathroom type accommodation
                                 if (student_info[student_itr].household_info.ensuite_flag == false)
                                     output.new_rehoused[output_time_idx,count] += 1
                                 end
@@ -827,17 +827,17 @@ function uni_network_run(RNGseed::Int64,
                                         attendance_record = undefined_array,
                                         dynamic_contact = 1)
 
-                            # Check if any accomodation dynamic contacts made by this student on this timestep
+                            # Check if any accommodation dynamic contacts made by this student on this timestep
                             # Only check if student lives on campus
                             if student_info[student_itr].household_info.on_campus_accom == true
                                 for accom_level = 1:3
                                     # Iterate over hall, block, floor contacts
-                                    # If there may be dynamic accomodation contacts assigned, check if transmission occurs
-                                    if isassigned(contacts.dynamic_accomodation_contacts,time,accom_level,student_itr)
+                                    # If there may be dynamic accommodation contacts assigned, check if transmission occurs
+                                    if isassigned(contacts.dynamic_accommodation_contacts,time,accom_level,student_itr)
                                         transmit_over!(student_info,transtemp_household,infected_by,output,states,
                                                                 probasymp,rng,time,count,
                                                                 infecting_by = student_itr,
-                                                                contacts_to_check = contacts.dynamic_accomodation_contacts[time,accom_level,student_itr],
+                                                                contacts_to_check = contacts.dynamic_accommodation_contacts[time,accom_level,student_itr],
                                                                 inisol = contacts.daily_record_inisol,
                                                                 attendance_record = undefined_array,
                                                                 dynamic_contact = 2)
@@ -1032,7 +1032,7 @@ function uni_network_run(RNGseed::Int64,
                     isolating_for_any_reason = true
                 end
 
-                # Isolating due to accomodation lockdown
+                # Isolating due to accommodation lockdown
                 if (student_info[student_itr].household_info.lockdown_status == true)
                     output.num_accom_lockdown_isolating[output_time_idx,count] += 1
                     isolating_for_any_reason = true

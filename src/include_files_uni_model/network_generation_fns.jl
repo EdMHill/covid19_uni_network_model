@@ -986,10 +986,10 @@ function get_on_campus_households_from_data!(network_parameters::network_params)
     	# 5 - Twin bathroom: studio
         bathroom_type_val = campus_data_raw[student_itr,6]
         if (bathroom_type_val == 2) || (bathroom_type_val == 3)
-            # Ensuite type accomodation
+            # Ensuite type accommodation
             student_info[student_itr].household_info.ensuite_flag = true
         else
-            # Communal bathroom type accomodation
+            # Communal bathroom type accommodation
             student_info[student_itr].household_info.ensuite_flag = false
         end
 
@@ -1124,10 +1124,10 @@ function get_on_campus_households_by_cohort!(network_parameters::network_params)
     	# 5 - Twin bathroom: studio
         bathroom_type_val = campus_data_raw[student_itr,6]
         if (bathroom_type_val == 2) || (bathroom_type_val == 3)
-            # Ensuite type accomodation
+            # Ensuite type accommodation
             student_info[student_itr].household_info.ensuite_flag = true
         else
-            # Communal bathroom type accomodation
+            # Communal bathroom type accommodation
             student_info[student_itr].household_info.ensuite_flag = false
         end
 
@@ -1269,7 +1269,7 @@ function assign_off_campus_households!(offcampus_student_household_size_distribu
 
             # Amend other household info fields as needed
             # Leaves on-campus fields (hall, block, floor, household within block) at default values of 0
-            student_info[person_ii_ID].household_info.on_campus_accom = false   # Whether accomodation is on campus (true) or off campus (false)
+            student_info[person_ii_ID].household_info.on_campus_accom = false   # Whether accommodation is on campus (true) or off campus (false)
             student_info[person_ii_ID].household_info.location = offcampus_student_location_names[household_location_ID] # name of location where student is living
         end
 
@@ -1343,7 +1343,7 @@ function assign_households_fn!(generate_student_households_fn_name::String,
          # Update fields in contacts parameter type
          contacts.household_contacts = household_contacts
      else
-        # Assignment to households uses accomodation hierarchy
+        # Assignment to households uses accommodation hierarchy
 
         """
         On campus household assignment
@@ -1680,10 +1680,10 @@ function generate_dynamic_student_contacts(RNGseed::Int64,
 end
 
 """
-Functions used to generate dynamic accomodation contacts
+Functions used to generate dynamic accommodation contacts
 """
-# Function to get dynamic accomodation contacts for each layer of accomodation hierarchy
-function get_layer_dynamic_accom_contacts!(dynamic_accomodation_contacts::Array{Array{Int64,1},3},
+# Function to get dynamic accommodation contacts for each layer of accommodation hierarchy
+function get_layer_dynamic_accom_contacts!(dynamic_accommodation_contacts::Array{Array{Int64,1},3},
                                             RNGseed::Int64,
                                             contact_prob::Float64,
                                             persons_to_check::Array{Int64,1},
@@ -1692,18 +1692,18 @@ function get_layer_dynamic_accom_contacts!(dynamic_accomodation_contacts::Array{
                                             student_ID::Int64
                                             )
 # Inputs:
-# dynamic_accomodation_contacts::Array{Array{Int64,1},3} - Per node, a record of dynamic accomodation contacts made on each day
-#                                                           Relevant to those in on-campus accomodation only.
+# dynamic_accommodation_contacts::Array{Array{Int64,1},3} - Per node, a record of dynamic accommodation contacts made on each day
+#                                                           Relevant to those in on-campus accommodation only.
 #                                                           Three dimensions of vectors. Row per timestep, column per accom level, slice per student
 # RNGseed - Seed the random number generator
 # contact_prob::Float64 - Chance of a contact occurring with each other person per timestep
-# persons_to_check::Array{Int64,1} - Persons from the accomodation unit that may be contacted
+# persons_to_check::Array{Int64,1} - Persons from the accommodation unit that may be contacted
 # accom_hierarchy_string::Int64 - "Hall", "Block" or "Floor", dependent on where dynamic contacts are taking place
 # endtime::Int64 - Number of timesteps performed in the simulation
 # student_ID::Int64 - As decribed
 
 # Outputs:
-# Directly alters dynamic_accomodation_contacts
+# Directly alters dynamic_accommodation_contacts
 
     """
     Set the RNG
@@ -1711,7 +1711,7 @@ function get_layer_dynamic_accom_contacts!(dynamic_accomodation_contacts::Array{
     rng = MersenneTwister(RNGseed)
 
     """
-    Assign column entry of dynamic_accomodation_contacts based on accom_hierarchy_name
+    Assign column entry of dynamic_accommodation_contacts based on accom_hierarchy_name
     """
     if accom_hierarchy_name == "Hall"
         accom_hierarchy_level = 1
@@ -1724,7 +1724,7 @@ function get_layer_dynamic_accom_contacts!(dynamic_accomodation_contacts::Array{
     end
 
     """
-    Check contacts in that accomodation unit. Push to vector if contact probability accepted
+    Check contacts in that accommodation unit. Push to vector if contact probability accepted
     """
     n_persons_to_check = length(persons_to_check)
     track_contact_status = zeros(Int64,n_persons_to_check)
@@ -1741,11 +1741,11 @@ function get_layer_dynamic_accom_contacts!(dynamic_accomodation_contacts::Array{
         """
         n_contacts_made = sum(track_contact_status)
         allocation_idx = 1  # Counter to allocate the ID of contact to vector in specified index position
-        dynamic_accomodation_contacts[time_itr,accom_hierarchy_level,student_ID] = zeros(Int64,n_contacts_made)
+        dynamic_accommodation_contacts[time_itr,accom_hierarchy_level,student_ID] = zeros(Int64,n_contacts_made)
         for persons_to_check_itr = 1:n_persons_to_check
             if track_contact_status[persons_to_check_itr] == 1
                 person_contacted_ID = persons_to_check[persons_to_check_itr]
-                dynamic_accomodation_contacts[time_itr,accom_hierarchy_level,student_ID][allocation_idx] = person_contacted_ID
+                dynamic_accommodation_contacts[time_itr,accom_hierarchy_level,student_ID][allocation_idx] = person_contacted_ID
                 allocation_idx += 1 # Increment allocation index
             end
         end
@@ -1769,7 +1769,7 @@ function generate_dynamic_campus_accom_contacts(RNGseed::Int64,
 # contacts - Record of who is in contact with whom in each layer
 
 # Outputs:
-# dynamic_accom_contacts - Per node, a record of dynamic accomodation (on campus) contacts made on each day
+# dynamic_accom_contacts - Per node, a record of dynamic accommodation (on campus) contacts made on each day
 
 
     """
@@ -1782,7 +1782,7 @@ function generate_dynamic_campus_accom_contacts(RNGseed::Int64,
     """
     Initialise vector of vectors storing IDs of contacts for each node
     """
-    dynamic_accomodation_contacts = Array{Array{Int64,1},3}(undef,endtime,3,n_students)
+    dynamic_accommodation_contacts = Array{Array{Int64,1},3}(undef,endtime,3,n_students)
 
     """
     Iterate over all nodes
@@ -1805,7 +1805,7 @@ function generate_dynamic_campus_accom_contacts(RNGseed::Int64,
             n_floors_in_block = length(floor_member_list[student_hall_ID][student_block_ID])
             n_households_on_floor = length(household_member_list[student_hall_ID][student_block_ID][student_floor_ID])
 
-            # Assign the contact probability based on level of accomodation hierarchy
+            # Assign the contact probability based on level of accommodation hierarchy
             for block_itr = 1:n_blocks_in_hall
                 # Checkings persons in different block. Use hall level contact prob.
                 if (block_itr != student_block_ID)
@@ -1814,7 +1814,7 @@ function generate_dynamic_campus_accom_contacts(RNGseed::Int64,
                     # Check contacts in that hall from a different block.
                     # Push to vector if contact probability accepted
                     persons_to_check = block_member_list[student_hall_ID][block_itr]
-                    get_layer_dynamic_accom_contacts!(dynamic_accomodation_contacts,
+                    get_layer_dynamic_accom_contacts!(dynamic_accommodation_contacts,
                                                                 RNGseed,
                                                                 contact_prob,
                                                                 persons_to_check,
@@ -1835,7 +1835,7 @@ function generate_dynamic_campus_accom_contacts(RNGseed::Int64,
                         # Check contacts in that block, but on a different floor.
                         # Push to vector if contact probability accepted
                         persons_to_check = floor_member_list[student_hall_ID][student_block_ID][floor_itr]
-                        get_layer_dynamic_accom_contacts!(dynamic_accomodation_contacts,
+                        get_layer_dynamic_accom_contacts!(dynamic_accommodation_contacts,
                                                                     RNGseed,
                                                                     contact_prob,
                                                                     persons_to_check,
@@ -1856,7 +1856,7 @@ function generate_dynamic_campus_accom_contacts(RNGseed::Int64,
                     # Check contacts on that floor, but in a different household
                     # Push to vector if contact probability accepted
                     persons_to_check = household_member_list[student_hall_ID][student_block_ID][student_floor_ID][household_itr]
-                    get_layer_dynamic_accom_contacts!(dynamic_accomodation_contacts,
+                    get_layer_dynamic_accom_contacts!(dynamic_accommodation_contacts,
                                                                 RNGseed,
                                                                 contact_prob,
                                                                 persons_to_check,
@@ -1869,7 +1869,7 @@ function generate_dynamic_campus_accom_contacts(RNGseed::Int64,
         end
     end
 
-    return dynamic_accomodation_contacts::Array{Array{Int64,1},3}
+    return dynamic_accommodation_contacts::Array{Array{Int64,1},3}
 end
 
 """

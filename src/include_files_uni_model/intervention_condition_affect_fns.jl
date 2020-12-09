@@ -15,11 +15,11 @@ Cohort level functions
 Society related functions
  - society_check
 
-Accomodation functions
-- accom_lockdown_unit_check!  (Find those accomodation units whose lockdown measures need updating)
-- accom_lockdown_unit_alter_status! (Update those students in accomodation units lockdown measures are being enforced)
+accommodation functions
+- accom_lockdown_unit_check!  (Find those accommodation units whose lockdown measures need updating)
+- accom_lockdown_unit_alter_status! (Update those students in accommodation units lockdown measures are being enforced)
 - accom_lockdown_hall_level!, accom_lockdown_block_level!, accom_lockdown_floor_level!,
-   accom_lockdown_household_level!  (lockdown accomodation, with conditions at the specified level)
+   accom_lockdown_household_level!  (lockdown accommodation, with conditions at the specified level)
 """
 
 
@@ -261,7 +261,7 @@ end
 
 
 """
-Accomodation related functions
+accommodation related functions
 """
 
 # Call function to do condition check
@@ -271,24 +271,24 @@ function accom_lockdown_unit_check(unit_resident_list::Array{Int64,1},
                                        time::Int64
                                        )
 # Inputs:
-# unit_resident_list::Array{Int64,1} - The IDs of students in the accomodation unit being checked
+# unit_resident_list::Array{Int64,1} - The IDs of students in the accommodation unit being checked
 # intervention_parameters::intervention_params - Valeus used to check if measures should be enforced/relaxed
 # student_info::student_params - Information of each student in the system
 # time::Int64 - Current time of the simulation
 
 # Outputs:
-# recent_reported_cases::Int64 - Number of cases within relevant time period in accomodation unit of interest
-# propn_unit_reporting::Float64 - Porportion of popn impacted within relevant time period in accomodation unit of interest
+# recent_reported_cases::Int64 - Number of cases within relevant time period in accommodation unit of interest
+# propn_unit_reporting::Float64 - Porportion of popn impacted within relevant time period in accommodation unit of interest
 
    @unpack time_horizon, inactivation_length, absolute_case_threshold,
             propn_case_threshold, release_condition_time_horizon,
             release_condition_absolute_cases, release_condition_propn_cases  = intervention_parameters
 
-   # Get number of students in the accomodation unit of interest
+   # Get number of students in the accommodation unit of interest
    n_students_in_unit = length(unit_resident_list)
 
-   # Check if accomodation block is in lockdown already
-   # Use first student, as status should be the same for all students in that accomodation
+   # Check if accommodation block is in lockdown already
+   # Use first student, as status should be the same for all students in that accommodation
    first_student_ID = unit_resident_list[1]
    current_accom_lockdown_status = student_info[first_student_ID].household_info.lockdown_status
 
@@ -318,13 +318,13 @@ function accom_lockdown_unit_alter_status!(unit_resident_list::Array{Int64,1},
                                        condition_values::Array{Float64,1}
                                        )
 # Inputs:
-# unit_resident_list::Array{Int64,1} - The IDs of students in the accomodation unit being checked
+# unit_resident_list::Array{Int64,1} - The IDs of students in the accommodation unit being checked
 # intervention_parameters::intervention_params - Valeus used to check if measures should be enforced/relaxed
 # student_info::student_params - Information of each student in the system
 # time::Int64 - Current time of the simulation
 
 # Outputs:
-#  Direct modifications to student_info field on accomodation lockdown status
+#  Direct modifications to student_info field on accommodation lockdown status
 
    @unpack time_horizon, inactivation_length, absolute_case_threshold,
             propn_case_threshold, release_condition_time_horizon,
@@ -338,16 +338,16 @@ function accom_lockdown_unit_alter_status!(unit_resident_list::Array{Int64,1},
    recent_reported_cases::Int64 = convert(Int64,condition_values[1])
    propn_unit_reporting::Float64 = condition_values[2]
 
-   # Get number of students in the accomodation unit of interest
+   # Get number of students in the accommodation unit of interest
    n_students_in_unit = length(unit_resident_list)
 
-   # Check if accomodation unit is in lockdown already
-   # Use first student, as status should be the same for all students in that accomodation
+   # Check if accommodation unit is in lockdown already
+   # Use first student, as status should be the same for all students in that accommodation
    first_student_ID = unit_resident_list[1]
    current_accom_lockdown_status = student_info[first_student_ID].household_info.lockdown_status
 
    if current_accom_lockdown_status == true
-      # Accomodation in lockdown. See if it can be released.
+      # accommodation in lockdown. See if it can be released.
 
       # If rate is below a certain level & a certain number of cases
       # release lockdown
@@ -357,7 +357,7 @@ function accom_lockdown_unit_alter_status!(unit_resident_list::Array{Int64,1},
       end
 
    else
-      # Accomodation not in lockdown. Check if it should be
+      # accommodation not in lockdown. Check if it should be
 
       # If rate is above a certain level & a certain number of cases
       # enforce lockdown
@@ -373,7 +373,7 @@ function accom_lockdown_unit_alter_status!(unit_resident_list::Array{Int64,1},
          # Get the ID of the student
          current_student_ID = unit_resident_list[student_in_unit_itr]
 
-         # Update the status of accomodation lockdown for the student
+         # Update the status of accommodation lockdown for the student
          if alter_accom_lockdown_status == "enforce"
             student_info[current_student_ID].household_info.lockdown_status = true
          elseif alter_accom_lockdown_status == "release"
@@ -383,9 +383,9 @@ function accom_lockdown_unit_alter_status!(unit_resident_list::Array{Int64,1},
    end
 end
 
-# Check whether to "lock down" accomodation at various levels
+# Check whether to "lock down" accommodation at various levels
 # Hall level, block level, floor level, or household level
-# Applies to on campus accomodation only
+# Applies to on campus accommodation only
 # Class/society activities no longer permitted for affected students
 function accom_lockdown_hall_level!(network_parameters::network_params,
                                     intervention_trigger_input_data::intervention_data_feeds,
@@ -598,13 +598,13 @@ end
 #                                        time::Int64
 #                                        )
 # # Inputs:
-# # unit_resident_list::Array{Int64,1} - The IDs of students in the accomodation unit being checked
+# # unit_resident_list::Array{Int64,1} - The IDs of students in the accommodation unit being checked
 # # intervention_parameters::intervention_params - Valeus used to check if measures should be enforced/relaxed
 # # student_info::student_params - Information of each student in the system
 # # time::Int64 - Current time of the simulation
 #
 # # Outputs:
-# #  Direct modifications to student_info field on accomodation lockdown status
+# #  Direct modifications to student_info field on accommodation lockdown status
 #
 #    @unpack time_horizon, inactivation_length, absolute_case_threshold,
 #             propn_case_threshold, release_condition_time_horizon,
@@ -613,11 +613,11 @@ end
 #    # Initialise status for amending lockdown status
 #    alter_accom_lockdown_status = "no"
 #
-#    # Get number of students in the accomodation unit of interest
+#    # Get number of students in the accommodation unit of interest
 #    n_students_in_unit = length(unit_resident_list)
 #
-#    # Check if accomodation block is in lockdown already
-#    # Use first student, as status should be the same for all students in that accomodation
+#    # Check if accommodation block is in lockdown already
+#    # Use first student, as status should be the same for all students in that accommodation
 #    first_student_ID = unit_resident_list[1]
 #    current_accom_lockdown_status = student_info[first_student_ID].household_info.lockdown_status
 #
@@ -635,7 +635,7 @@ end
 #    propn_unit_reporting = recent_reported_cases/n_students_in_unit
 #
 #    if current_accom_lockdown_status == true
-#       # Accomodation in lockdown. See if it can be released.
+#       # accommodation in lockdown. See if it can be released.
 #
 #       # If rate is below a certain level & a certain number of cases
 #       # release lockdown
@@ -645,7 +645,7 @@ end
 #       end
 #
 #    else
-#       # Accomodation not in lockdown. Check if it should be
+#       # accommodation not in lockdown. Check if it should be
 #
 #       # If rate is above a certain level & a certain number of cases
 #       # enforce lockdown
@@ -661,7 +661,7 @@ end
 #          # Get the ID of the student
 #          current_student_ID = unit_resident_list[student_in_unit_itr]
 #
-#          # Update the status of accomodation lockdown for the student
+#          # Update the status of accommodation lockdown for the student
 #          if alter_accom_lockdown_status == "enforce"
 #             student_info[current_student_ID].household_info.lockdown_status = true
 #          elseif alter_accom_lockdown_status == "release"
@@ -669,4 +669,4 @@ end
 #          end
 #       end
 #    end
-# end 
+# end

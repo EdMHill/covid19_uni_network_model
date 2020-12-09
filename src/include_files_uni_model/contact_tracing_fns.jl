@@ -317,10 +317,10 @@ function trace_node!(student_itr::Int64,time::Int64,CT_vars::contact_tracing_var
                 append!(CT_vars.Inds_to_be_contacted[student_itr],dynamic_recallable_contacts)
             end
 
-            # Get recallable dynamic accomodation contacts
+            # Get recallable dynamic accommodation contacts
             for accom_level = 1:3
-                if isassigned(contacts.dynamic_accomodation_contacts,time,accom_level,student_itr)
-                    accom_dynamic_contacts = contacts.dynamic_accomodation_contacts[time-time_itr,accom_level,student_itr]  # Get IDs of those dynamic contacts on required day
+                if isassigned(contacts.dynamic_accommodation_contacts,time,accom_level,student_itr)
+                    accom_dynamic_contacts = contacts.dynamic_accommodation_contacts[time-time_itr,accom_level,student_itr]  # Get IDs of those dynamic contacts on required day
                     dynamic_accom_recallable_contacts = recallable_dynamic_contacts(student_itr,
                                                                                     accom_dynamic_contacts,
                                                                                     CT_parameters.accom_dynamic_contacts_recalled_propn,

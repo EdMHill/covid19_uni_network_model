@@ -1138,8 +1138,8 @@ function transmit_over!(student_info::Array{student_params,1},
                 # if this was a dynamic contact, update counter
                 if dynamic_contact==1 # Social dynamic contact
                     output.social_dynamic_infection_count[time+1,count] += 1
-                elseif dynamic_contact==2 # Accomodation dynamic contact
-                    output.accomodation_dynamic_infection_count[time+1,count] += 1
+                elseif dynamic_contact==2 # accommodation dynamic contact
+                    output.accommodation_dynamic_infection_count[time+1,count] += 1
                 end
             end
         end
@@ -1371,8 +1371,8 @@ function assign_household_transmit_household_size!(RNGseed::Int64,
     return nothing
 end
 
-# For on-campus accomodation, assign household risk based on halls
-# For off-campus accomodation, assign the "medium" risk
+# For on-campus accommodation, assign household risk based on halls
+# For off-campus accommodation, assign the "medium" risk
 function assign_household_transmit_halls_risk!(RNGseed::Int64,
                                     network_parameters::network_params,
                                     household_contacts_per_node::Array{Int64,1},
@@ -1412,7 +1412,7 @@ function assign_household_transmit_halls_risk!(RNGseed::Int64,
     # Iterate over each individual
     for node_itr = 1:n_students
 
-        # Check student on campus accomodation status
+        # Check student on campus accommodation status
         on_campus_accom_status = student_info[node_itr].household_info.on_campus_accom
         if  on_campus_accom_status == false
              # If living off-campus, assign the medium risk
@@ -1616,6 +1616,7 @@ function reinitialise_node_states!(states::student_states)
     lmul!(0,states.lattime)
     lmul!(0,states.timeisol)
     lmul!(0,states.symp_timeisol)
+    lmul!(0,states.asymp_timeisol)
     lmul!(0,states.timeisol_CTcause)
     lmul!(0,states.hh_isolation)
     lmul!(0,states.delay_adherence)
@@ -1639,7 +1640,12 @@ function reinitialise_student_params!(n_students::Int64,
     for student_itr = 1:n_students
         student_info[student_itr].time_of_reporting_infection = 0
         student_info[student_itr].no_contacts_status = false
+
+        # Remove any household lockdown
+        student_info[student_itr].household_info.lockdown_status = false
     end
+
+
 
     return nothing
 end

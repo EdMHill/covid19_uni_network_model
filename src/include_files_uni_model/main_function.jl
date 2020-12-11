@@ -545,10 +545,21 @@ function uni_network_run(RNGseed::Int64,
                     if (states.asymp[student_itr] == 0) && (states.delay_adherence[student_itr]==0)
                         # Check if infected will isolate
                         if (states.hh_isolation[student_itr]==1)
-                            states.symp_timeisol[student_itr] = 1
 
-                            # Set that the unit has reported infection this timestep
-                            states.rep_inf_this_timestep[student_itr] = 1
+                            # Check if individual is not already isolating after positive test in absence of symptoms
+                            # If not, set that the unit has reported infection this timestep
+                            # If they have, they will not enter the test and contact trace loop later
+                            if states.asymp_timeisol[student_itr] == 0
+                                states.rep_inf_this_timestep[student_itr] = 1
+                            end
+
+                            # Isolation due to presence of symptoms
+                            # Reset possible isolation due to positive test in absence of symptoms (states.asymp_timeisol)
+                            states.symp_timeisol[student_itr] = 1
+                            states.asymp_timeisol[student_itr] = 0
+
+                            # Supercedes household isolation. Reset that counter
+                            states.timeisol[student_itr] = 0
 
                             # Assign time of reporting to field in student parameter type
                             student_info[student_itr].time_of_reporting_infection = time
@@ -556,7 +567,8 @@ function uni_network_run(RNGseed::Int64,
                             # If an available option, no contacts state entered if student is living on-campus
                             # Will last until end of symptoms (irrespective of test result)
                             if (rehouse_strat_active == true) &&
-                                    (student_info[student_itr].household_info.on_campus_accom == true)
+                                    (student_info[student_itr].household_info.on_campus_accom == true) &&
+                                    (student_info[student_itr].no_contacts_status == false)
                                 student_info[student_itr].no_contacts_status = true
 
                                 # Update rehoused output variable if living in communal
@@ -572,8 +584,14 @@ function uni_network_run(RNGseed::Int64,
                         for hh = 1:household_contacts_per_node[student_itr]
                             contact_ID = contacts.household_contacts[student_itr][hh]
                             if (states.hh_isolation[contact_ID]==1) &&
-                                (states.symp_timeisol[contact_ID]==0) # Individual not already symptomatic themselves
+                                (states.symp_timeisol[contact_ID]==0) && # Individual not already symptomatic themselves
+                                (states.asymp_timeisol[contact_ID]==0) # Individual not already asymptomatic and test positive
                                 states.timeisol[contact_ID] = 1
+
+                                # If no testing taking place, store time of expected household isolation release
+                                if contact_tracing_active == false
+                                    CT_vars.hh_isolation_release_time[contact_ID] = time + household_isoltime
+                                end
                             end
                         end
                     end
@@ -583,7 +601,7 @@ function uni_network_run(RNGseed::Int64,
                     if contact_tracing_active == true
                         if (states.asymp[student_itr] == 0) # Check case is symptomatic
                             current_node_household_ID = student_info[student_itr].household_info.household_ID
-                            CT_vars.Symp_cases_per_household_pos_or_unknown[current_node_household_ID] += 1
+                            CT_vars.Cases_per_household_pos_or_unknown[current_node_household_ID] += 1
                         end
                     end
                 end
@@ -592,18 +610,38 @@ function uni_network_run(RNGseed::Int64,
                 if (states.timesymp[student_itr] > 1)&&((states.timesymp[student_itr]-1)==states.delay_adherence[student_itr]) # Condition for node beginning adherence on current day & has been symptomatic for at least one day
                     if states.asymp[student_itr] == 0 # Check node is symptomatic and will adhere
                         if states.hh_isolation[student_itr]==1 # Check node will adhere
-                            states.symp_timeisol[student_itr] = 1 + states.delay_adherence[student_itr]
 
-                            # Set that the unit has reported infection this timestep
-                            states.rep_inf_this_timestep[student_itr] = 1
+                            # Check if individual is not already isolating after positive test in absence of symptoms
+                            # If not, set that the unit has reported infection this timestep
+                            # If they have, they will not enter the test and contact trace loop later
+                            if states.asymp_timeisol[student_itr] == 0
+                                states.rep_inf_this_timestep[student_itr] = 1
+                            end
+
+                            # Isolation due to presence of symptoms
+                            # Reset possible isolation due to positive test in absence of symptoms (states.asymp_timeisol)
+                            states.symp_timeisol[student_itr] = 1 + states.delay_adherence[student_itr]
+                            states.asymp_timeisol[student_itr] = 0
+
+                            # Supercedes household isolation. Reset that counter
+                            states.timeisol[student_itr] = 0
 
                             # Assign time of reporting to field in student parameter type
                             student_info[student_itr].time_of_reporting_infection = time
 
-                            # If an available option, no contacts state entered
+                            # If an available option, no contacts state entered if student is living on-campus
+                            # AND the person is not already in room isolation
                             # Will last until end of symptoms (irrespective of test result)
-                            if rehouse_strat_active == true
+                            if (rehouse_strat_active == true) &&
+                                    (student_info[student_itr].household_info.on_campus_accom == true) &&
+                                    (student_info[student_itr].no_contacts_status == false)
                                 student_info[student_itr].no_contacts_status = true
+
+                                # Update rehoused output variable if living in communal
+                                # bathroom type accommodation
+                                if (student_info[student_itr].household_info.ensuite_flag == false)
+                                    output.new_rehoused[output_time_idx,count] += 1
+                                end
                             end
                         end
 
@@ -614,10 +652,21 @@ function uni_network_run(RNGseed::Int64,
                         # of the index case
                         for hh = 1:household_contacts_per_node[student_itr]
                             contact_ID = contacts.household_contacts[student_itr][hh]
-                            if (states.hh_isolation[contact_ID]==1) && (states.symp_timeisol[contact_ID]==0) # Individual not already symptomatic themselves
-                                states.timeisol[contact_ID] = 1 + states.delay_adherence[student_itr]
-                                    # Individual shortens isolation by length of time since
-                                    # unwell individual began displaying symptoms
+                            if (states.hh_isolation[contact_ID]==1) &&
+                               (states.symp_timeisol[contact_ID]==0) && # Individual not already symptomatic themselves
+                               (states.asymp_timeisol[contact_ID]==0) # Individual not already isolating as asymptomatic & tested positive
+
+                               set_hh_isol_time = 1 + states.delay_adherence[student_itr]
+                               if (states.timeisol[contact_ID] > set_hh_isol_time)
+                                       states.timeisol[contact_ID] = set_hh_isol_time
+                               end
+                                   # Individual shortens isolation by length of time since
+                                   # unwell individual began displaying symptoms
+
+                                    # If no testing taking place, store time of expected household isolation release
+                                    if contact_tracing_active == false
+                                        CT_vars.hh_isolation_release_time[contact_ID] = time + household_isoltime - states.delay_adherence[student_itr]
+                                    end
                             end
                         end
                     end
@@ -638,11 +687,11 @@ function uni_network_run(RNGseed::Int64,
                         # Check case is symptomatic & not returned a false negative (if false negative, has already been subtracted)
                         if (states.asymp[student_itr] == 0) && (CT_vars.Test_result_false_negative[student_itr] == false)
                             current_node_household_ID = student_info[student_itr].household_info.household_ID
-                            CT_vars.Symp_cases_per_household_pos_or_unknown[current_node_household_ID] -= 1
+                            CT_vars.Cases_per_household_pos_or_unknown[current_node_household_ID] -= 1
 
                             # Error check
-                            if CT_vars.Symp_cases_per_household_pos_or_unknown[current_node_household_ID] < 0
-                                error("CT_vars.Symp_cases_per_household_pos_or_unknown contains a negative entry. Terminate programme.")
+                            if CT_vars.Cases_per_household_pos_or_unknown[current_node_household_ID] < 0
+                                error("CT_vars.Cases_per_household_pos_or_unknown contains a negative entry. Terminate programme.")
                             end
 
                         end
@@ -934,29 +983,107 @@ function uni_network_run(RNGseed::Int64,
 
                                 # Amend tracker of symptomatic cases, unknown test result
                                 current_node_household_ID = student_info[student_itr].household_info.household_ID
-                                CT_vars.Symp_cases_per_household_pos_or_unknown[current_node_household_ID] -= 1
+                                CT_vars.Cases_per_household_pos_or_unknown[current_node_household_ID] -= 1
 
                                 # Error check
-                                if CT_vars.Symp_cases_per_household_pos_or_unknown[current_node_household_ID] < 0
-                                    error("CT_vars.Symp_cases_per_household_pos_or_unknown contains a negative entry. Terminate programme.")
+                                if CT_vars.Cases_per_household_pos_or_unknown[current_node_household_ID] < 0
+                                    error("CT_vars.Cases_per_household_pos_or_unknown contains a negative entry. Terminate programme.")
                                 end
 
-                                # If returning a false negative, can release other household members from isolation
-                                # Only release if no other household members are symptomatic
-                                if CT_vars.Symp_cases_per_household_pos_or_unknown[current_node_household_ID] == 0
-                                    n_household_contacts = length(contacts.household_contacts[student_itr])
-                                    for household_contact_itr = 1:n_household_contacts
-                                        household_contact_ID = contacts.household_contacts[student_itr][household_contact_itr]
-                                        if states.timeisol_CTcause[household_contact_ID] == 0 # Check not also self isolating due to contact tracing
-                                            states.timeisol[household_contact_ID] = 0
-                                        end
-                                    end
-                                end
+                                # Negative result. Possible release from household isolation
+                                # Procedure (iterating over each adhering individual in household):
+                                # (i) Release individuals from household isolation (if previous confirmed hh isol release time less than current time)
+                                # (ii) Check current hh isol time elapsed tracker. See if hh isol has been triggered by another hh member more recently.
+                                # (iii) If no more recent events, reset household isolation tracker to previous values.
+                                n_household_contacts = length(contacts.household_contacts[student_itr])
+                                for household_contact_itr = 1:n_household_contacts
+                                    household_contact_ID = contacts.household_contacts[student_itr][household_contact_itr]
 
+                                    # Check individual would isolate
+                                    # AND not isolating due to positive test/symptomatic
+                                    # AND is currently in a valid hh isolation state
+                                    # (e.g. If household contact was at end of own symptomatic isolation on
+                                    # day index case took test, they would not have activated isolation counter then
+                                    # and should not be considered here)
+                                    if (states.hh_isolation[household_contact_ID]==1) &&
+                                            (states.symp_timeisol[household_contact_ID]==0) && # Individual not already symptomatic themselves
+                                            (states.asymp_timeisol[household_contact_ID]==0) && # Individual not already isolating as asymptomatic & tested positive
+                                            (states.timeisol[household_contact_ID] > 0)
+
+                                            # Release individuals from household isolation (if previous confirmed hh isol release time less than current time)
+                                            # Also caters for non-adhering individuals, as this condition is always satisfied for them.
+                                            if (CT_vars.hh_isolation_release_time[household_contact_ID] <= time) &&
+                                                    (CT_vars.Cases_per_household_pos_or_unknown[current_node_household_ID] == 0)
+
+                                                states.timeisol[household_contact_ID] = 0
+                                            end
+                                             # Note: If confirmed time to hh isolation release less than current time,
+                                             # but CT_vars.Cases_per_household_pos_or_unknown[current_node_household_ID] > 0,
+                                             # means still possibly other household members symptomatic & awaiting test result
+                                             # Therefore, leave isolation tracker in current state.
+
+
+                                             # Check current hh isol time elapsed tracker:
+                                             # If elapsed time less than period spent in hh isolation due to the current index case receiving negative result,
+                                             # then has been a more recent case that caused the tracker to reset
+                                             # In that case, leave isolation tracker in current state.
+                                             # If expected time passed matches, revise hh isol tracker time
+                                             index_case_expected_hh_isol_time = 1 + (CT_vars.CT_delay_until_test_result[student_itr] + states.delay_adherence[student_itr])
+
+                                             # Individuals still in hh isolation due to other infection events.
+                                             if states.timeisol[household_contact_ID] == index_case_expected_hh_isol_time
+                                                     # Revise household isolation tracker to previous values
+                                                     if (CT_vars.hh_isolation_release_time[household_contact_ID] > time)
+                                                         # Reset household isolation tracker based on
+                                                         # previous confirmed hh isol release time
+                                                         time_left_in_hh_isol = CT_vars.hh_isolation_release_time[household_contact_ID] - time
+                                                         states.timeisol[household_contact_ID] = (household_isoltime - time_left_in_hh_isol) + 1
+                                                                 # Add 1 to index as states.timeisol[household_contact_ID] = states.household_isoltime corresponds to final day of hh isol
+                                                     end
+                                             elseif states.timeisol[household_contact_ID] > index_case_expected_hh_isol_time
+                                                     # More than one household member returned negative test on current timestep
+                                                     println("household_contact_ID: $household_contact_ID. student_ID: $student_itr; More than one household member returned negative test on current timestep")
+
+                                                     # Revise household isolation tracker to previous values
+                                                     if (CT_vars.hh_isolation_release_time[household_contact_ID] > time)
+                                                             # Check time left in isol. Only adjust if results in a smaller states.timeisol value
+                                                             second_hh_isol_check_time_left = CT_vars.hh_isolation_release_time[household_contact_ID] - time
+                                                             second_hh_isol_check_time_elapsed = (household_isoltime - second_hh_isol_check_time_left) + 1
+                                                             println("states.timeisol[household_contact_ID]: $(states.timeisol[household_contact_ID]); second_hh_isol_check_time_elapsed: $second_hh_isol_check_time_elapsed")
+                                                             if second_hh_isol_check_time_elapsed < states.timeisol[household_contact_ID]
+                                                                     states.timeisol[household_contact_ID] = second_hh_isol_check_time_elapsed
+                                                             end
+                                                     end
+                                             end
+                                     end
+                                end
                             else
 
                                 # Increment true positive counter
                                 output.test_outcomes[output_time_idx,count,1] += 1
+
+                                # For household members adhering to isolation guidance,
+                                # update the current confirmed time of household isolation release
+                                for hh = 1:household_contacts_per_node[student_itr]
+                                    contact_ID = contacts.household_contacts[student_itr][hh]
+                                    if (states.hh_isolation[contact_ID]==1) &&
+                                       (states.symp_timeisol[contact_ID]==0) && # Individual not already symptomatic themselves
+                                       (states.asymp_timeisol[contact_ID]==0) && # Individual not already isolating as asymptomatic & tested positive
+                                       (states.timeisol[contact_ID] > 0)  # Check individual was placed in household isolation at time of test (If not, states.timeisol[contact_ID] = 0)
+
+                                       # Get time to isolation release
+                                       potential_hh_release_time = (time + household_isoltime) -
+                                                                        states.delay_adherence[student_itr] -
+                                                                        CT_vars.CT_delay_until_test_result[student_itr]
+
+                                       # Check it exceeds current household release time. If yes, update.
+                                       # Aim to avoid situation of multiple cases on same day leading to different
+                                       # release times and a lower value out the collection being taken forward
+                                       if potential_hh_release_time > CT_vars.hh_isolation_release_time[contact_ID]
+                                           CT_vars.hh_isolation_release_time[contact_ID] = potential_hh_release_time
+                                       end
+                                    end
+                                end
 
                                 # If test is positive, contacts told to isolate
                                 # Get number of recallable contacts

@@ -260,6 +260,7 @@ function increment_counters!(states::student_states,
         # Also resets other isolation counters to zero
         if symp_timeisol[student_itr]>symp_isoltime
             symp_timeisol[student_itr] = 0
+            asymp_timeisol[student_itr] = 0
             timeisol[student_itr] = 0
             if contact_tracing_active == true
                 timeisol_CTcause[student_itr] = 0
@@ -272,10 +273,19 @@ function increment_counters!(states::student_states,
         end
 
         if asymp_timeisol[student_itr]>asymp_isoltime
+            # Error check. Symptomatic isolation time should be zero
+            if symp_timeisol[student_itr] > 0
+                error("Asymp isolation period complete, but student ID $student_itr also logged as isolating due to symptoms.")
+            end
+
             asymp_timeisol[student_itr] = 0
             timeisol[student_itr] = 0
             if contact_tracing_active == true
                 timeisol_CTcause[student_itr] = 0
+
+                # Decrease number of positive/unknown cases in household by one
+                student_hh_ID = student_info[student_itr].household_info.household_ID
+                CT_vars.Cases_per_household_pos_or_unknown[student_hh_ID] -= 1
             end
         end
 
@@ -1676,7 +1686,10 @@ function reinitialise_CT_vars!(CT_vars::contact_tracing_vars,n_students::Int64, 
 @unpack CT_days_before_symptom_included, CT_engagement = CT_parameters
 
     # Reset vector tracking symptomatic cases (positive confirmed or untested)
-    lmul!(0,CT_vars.Symp_cases_per_household_pos_or_unknown)
+    lmul!(0,CT_vars.Cases_per_household_pos_or_unknown)
+
+    # Reset vector tracking the latest isolation release time due to household member cases
+    lmul!(0,CT_vars.hh_isolation_release_time)
 
     # Variables for waiting for test results
     lmul!(0,CT_vars.Time_to_test_result)

@@ -185,7 +185,10 @@ end
    Inds_to_be_contacted::Array{Array{Int64,1},1} = Array{Array{Int64,1},1}(undef,n_students)
 
    # vector tracking symptomatic cases (positive confirmed or untested)
-   Symp_cases_per_household_pos_or_unknown::Array{Int64,1} = zeros(Int64,n_households)
+   Cases_per_household_pos_or_unknown::Array{Int64,1} = zeros(Int64,n_households)
+
+   # Vector tracking the latest isolation release time due to household member cases
+   hh_isolation_release_time::Array{Int64,1} = zeros(Int64,n_students)
 
    # Variables for waiting for test results, set at -1 until activated
    Time_to_test_result::Array{Int64,1} = -1*ones(Int64,n_students)

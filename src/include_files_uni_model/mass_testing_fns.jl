@@ -261,7 +261,16 @@ function carry_out_mass_tests_in_location(time::Int64,
 
                   # Check if enter isolation for designated period
                   if (states.hh_isolation[current_node_ID]==1)
-                      states.asymp_timeisol[current_node_ID] = 1
+
+                     # Enter isolation due to poisitive test (though non-symptomatic)
+                     states.asymp_timeisol[current_node_ID] = 1
+
+                     # Supercedes household isolation. Reset that counter
+                     states.timeisol[current_node_ID] = 0
+
+                      # Update number of persons in household confirmed infected
+                      current_node_household_ID = student_info[current_node_ID].household_info.household_ID
+                      CT_vars.Cases_per_household_pos_or_unknown[current_node_household_ID] += 1
 
                       # Assign time of reporting to field in student parameter type
                       student_info[current_node_ID].time_of_reporting_infection = time
@@ -294,8 +303,13 @@ function carry_out_mass_tests_in_location(time::Int64,
                      record_hh_isolated[contact_ID] = 1
 
                      # If adheres to guidance, isolate
-                     if (states.hh_isolation[contact_ID]==1)
+                     if (states.hh_isolation[contact_ID]==1) &&
+                        (states.symp_timeisol[contact_ID]==0) && # Individual not already symptomatic themselves
+                        (states.asymp_timeisol[contact_ID]==0) # Individual not already isolating as asymptomatic & tested positive
                           states.timeisol[contact_ID] = 1
+
+                          # Update time of latest confirmed release from household isolation
+                          CT_vars.Time_of_hh_isolation_release[contact_ID] = time + states.household_isoltime
                      end
                   end
                end

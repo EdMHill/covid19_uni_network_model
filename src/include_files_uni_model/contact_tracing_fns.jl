@@ -12,7 +12,7 @@ function recallable_dynamic_contacts(student_ID::Int64,
                                             all_dynamic_contacts::Array{Int64,1},
                                             dynamic_contacts_recalled_propn::Array{Float64,1},
                                             daily_record_inisol::Array{Int64,2},
-                                            time::Int64,
+                                            time_to_check::Int64,
                                             prev_day_val::Int64,
                                             rng::MersenneTwister
                                             )
@@ -21,7 +21,7 @@ function recallable_dynamic_contacts(student_ID::Int64,
 # all_dynamic_contacts - IDs of those dynamic contacts by the student for the current timestep
 # dynamic_contacts_recalled_propn::Array{Float64,1} - Set up recall of dynamic contacts probability (Proportion of contacts remembered x days ago)
 # daily_record_inisol - For each node, records per timestep whether in isolation
-# time - Current timestep of the simulation
+# time_to_check - Timestep of the simulation to be checked.
 # prev_day_val - Number of days previous to be looked at
 # rng - The random number generator in use
 
@@ -44,7 +44,7 @@ function recallable_dynamic_contacts(student_ID::Int64,
         for contact_itr = 1:n_possible_dynamic_contacts
             # If not isolating, then contact did occur
             contact_ID = all_dynamic_contacts[contact_itr]
-            if daily_record_inisol[time,contact_ID]==false
+            if daily_record_inisol[time_to_check,contact_ID]==false
                 # Contact occurred
                 # Check if contact will be remembered
                 r = rand(rng)
@@ -79,7 +79,7 @@ Check contacts made in class setting
 function get_study_contacts(possible_study_contacts::Array{Int64,1},
                                 daily_record_inisol::Array{Int64,2},
                                 daily_record_inclass::Array{Int64,2},
-                                time::Int64,
+                                time_to_check::Int64,
                                 prev_day_val::Int64,
                                 rng::MersenneTwister
                                 )
@@ -87,7 +87,7 @@ function get_study_contacts(possible_study_contacts::Array{Int64,1},
 # possible_study_contacts - IDs of study contacts. Will check if actually occurred
 # daily_record_inisol - For each node, records per timestep whether in isolation
 # daily_record_inclass - For each node, records per timestep whether at workplace
-# time - Current timestep of the simulation
+# time_to_check - Timestep of the simulation to be checked.
 # prev_day_val - Number of days previous to be looked at
 # rng - The random number generator in use
 
@@ -102,8 +102,8 @@ function get_study_contacts(possible_study_contacts::Array{Int64,1},
 
         # If contact not isolating and in the class or work setting, then contact can occur.
         contact_ID = possible_study_contacts[contact_itr]
-        if (daily_record_inisol[time,contact_ID]==false) &&
-            (daily_record_inclass[time,contact_ID]==true)
+        if (daily_record_inisol[time_to_check,contact_ID]==false) &&
+            (daily_record_inclass[time_to_check,contact_ID]==true)
 
             # Contact in same workplace
             contact_occur_check[contact_itr] = 1
@@ -135,7 +135,7 @@ function get_society_contacts(possible_society_contacts::Array{Int64,1},
                                 society_ID::Int64,
                                 daily_record_inisol::Array{Int64,2},
                                 daily_record_atsociety::Array{Int64,3},
-                                time::Int64,
+                                time_to_check::Int64,
                                 prev_day_val::Int64,
                                 rng::MersenneTwister
                                 )
@@ -144,7 +144,7 @@ function get_society_contacts(possible_society_contacts::Array{Int64,1},
 # society_ID -
 # daily_record_inisol - For each node, records per timestep whether in isolation
 # daily_record_atsociety - For each node, records per timestep whether attended society
-# time - Current timestep of the simulation
+# time_to_check - Timestep of the simulation to be checked.
 # prev_day_val - Number of days previous to be looked at
 # rng - The random number generator in use
 
@@ -159,8 +159,8 @@ function get_society_contacts(possible_society_contacts::Array{Int64,1},
 
         # If contact not isolating and in the class or work setting, then contact can occur.
         contact_ID = possible_society_contacts[contact_itr]
-        if (daily_record_inisol[time,contact_ID]==false) &&
-            (daily_record_atsociety[time,society_ID,contact_ID]==true)
+        if (daily_record_inisol[time_to_check,contact_ID]==false) &&
+            (daily_record_atsociety[time_to_check,society_ID,contact_ID]==true)
 
             # Contact in same workplace
             contact_occur_check[contact_itr] = 1
@@ -253,7 +253,7 @@ function trace_node!(student_itr::Int64,time::Int64,CT_vars::contact_tracing_var
                 class_contacts = get_study_contacts(possible_class_contacts,
                                                             contacts.daily_record_inisol,
                                                             contacts.daily_record_inclass,
-                                                            time,
+                                                            time_to_check,
                                                             time_itr,
                                                             rng)
 
@@ -268,7 +268,7 @@ function trace_node!(student_itr::Int64,time::Int64,CT_vars::contact_tracing_var
                 cohort_contacts = get_study_contacts(possible_cohort_contacts,
                                                             contacts.daily_record_inisol,
                                                             contacts.daily_record_inclass,
-                                                            time,
+                                                            time_to_check,
                                                             time_itr,
                                                             rng)
 
@@ -290,7 +290,7 @@ function trace_node!(student_itr::Int64,time::Int64,CT_vars::contact_tracing_var
                                                                 current_society_ID,
                                                                 contacts.daily_record_inisol,
                                                                 contacts.daily_record_atsociety,
-                                                                time,
+                                                                time_to_check,
                                                                 time_itr,
                                                                 rng)
 
@@ -303,12 +303,12 @@ function trace_node!(student_itr::Int64,time::Int64,CT_vars::contact_tracing_var
             end
 
             # Get recallable dynamic social contacts
-            all_dynamic_contacts = contacts.dynamic_social_contacts[time-time_itr,student_itr]  # Get IDs of those dynamic contacts on required day
+            all_dynamic_contacts = contacts.dynamic_social_contacts[time_to_check,student_itr]  # Get IDs of those dynamic contacts on required day
             dynamic_recallable_contacts = recallable_dynamic_contacts(student_itr,
                                                                                 all_dynamic_contacts,
                                                                                 CT_parameters.dynamic_contacts_recalled_propn,
                                                                                 contacts.daily_record_inisol,
-                                                                                time,
+                                                                                time_to_check,
                                                                                 time_itr,
                                                                                 rng) # in contact_tracing_fns.jl
 
@@ -320,12 +320,12 @@ function trace_node!(student_itr::Int64,time::Int64,CT_vars::contact_tracing_var
             # Get recallable dynamic accommodation contacts
             for accom_level = 1:3
                 if isassigned(contacts.dynamic_accommodation_contacts,time,accom_level,student_itr)
-                    accom_dynamic_contacts = contacts.dynamic_accommodation_contacts[time-time_itr,accom_level,student_itr]  # Get IDs of those dynamic contacts on required day
+                    accom_dynamic_contacts = contacts.dynamic_accommodation_contacts[time_to_check,accom_level,student_itr]  # Get IDs of those dynamic contacts on required day
                     dynamic_accom_recallable_contacts = recallable_dynamic_contacts(student_itr,
                                                                                     accom_dynamic_contacts,
                                                                                     CT_parameters.accom_dynamic_contacts_recalled_propn,
                                                                                     contacts.daily_record_inisol,
-                                                                                    time,
+                                                                                    time_to_check,
                                                                                     time_itr,
                                                                                     rng) # in contact_tracing_fns.jl
 

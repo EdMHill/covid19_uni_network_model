@@ -483,13 +483,13 @@ function uni_network_run(RNGseed::Int64,
             """
             # Increment counters if node is currently in that state.
             if contact_tracing_active==true
-                increment_counters!(states,
+                increment_counters!(student_info,CT_vars,states,
                     household_isoltime,symp_isoltime,asymp_isoltime,
                     contact_tracing_active,
                     timeisol_CTcause=states.timeisol_CTcause,
                     CT_caused_isol_limit=CT_caused_isol_limit) # in additional_fns.jl
             else
-                increment_counters!(states,
+                increment_counters!(student_info,CT_vars,states,
                     household_isoltime,symp_isoltime,asymp_isoltime,contact_tracing_active) # in additional_fns.jl
             end
 
@@ -1355,6 +1355,7 @@ function uni_network_run(RNGseed::Int64,
                                                       CT_vars,
                                                       CT_parameters,
                                                       network_parameters,
+                                                      infection_parameters,
                                                       contacts,
                                                       output,
                                                       household_contacts_per_node,

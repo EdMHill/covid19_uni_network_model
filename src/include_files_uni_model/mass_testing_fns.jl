@@ -111,6 +111,7 @@ function carry_out_mass_tests_in_location(time::Int64,
                                              CT_vars::contact_tracing_vars,
                                              CT_parameters::CT_params,
                                              network_parameters::network_params,
+                                             infection_parameters::infection_params,
                                              states::student_states,
                                              contacts::contacts_struct,
                                              household_contacts_per_node::Array{Int64,1},
@@ -309,7 +310,7 @@ function carry_out_mass_tests_in_location(time::Int64,
                           states.timeisol[contact_ID] = 1
 
                           # Update time of latest confirmed release from household isolation
-                          CT_vars.Time_of_hh_isolation_release[contact_ID] = time + states.household_isoltime
+                          CT_vars.hh_isolation_release_time[contact_ID] = time + infection_parameters.household_isoltime
                      end
                   end
                end
@@ -332,6 +333,7 @@ function perform_mass_test!(mass_testing_parameters::mass_testing_params,
                                           CT_vars::contact_tracing_vars,
                                           CT_params::CT_params,
                                           network_parameters::network_params,
+                                          infection_parameters::infection_params,
                                           contacts::contacts_struct,
                                           output::sim_outputs,
                                           household_contacts_per_node::Array{Int64,1},
@@ -396,6 +398,7 @@ function perform_mass_test!(mass_testing_parameters::mass_testing_params,
                                              CT_vars,
                                              CT_params,
                                              network_parameters,
+                                             infection_parameters,
                                              states,
                                              contacts,
                                              household_contacts_per_node,
@@ -416,6 +419,7 @@ function perform_mass_test!(mass_testing_parameters::mass_testing_params,
                                           CT_vars,
                                           CT_params,
                                           network_parameters,
+                                          infection_parameters,
                                           states,
                                           contacts,
                                           household_contacts_per_node,

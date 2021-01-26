@@ -217,7 +217,9 @@ Outline of steps, iterating over each society:
     return nothing
 end
 
-function increment_counters!(states::student_states,
+function increment_counters!(student_info::Array{student_params,1},
+                            CT_vars::contact_tracing_vars,
+                            states::student_states,
                             household_isoltime::Int64,
                             symp_isoltime::Int64,
                             asymp_isoltime::Int64,

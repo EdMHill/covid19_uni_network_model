@@ -155,7 +155,7 @@ function carry_out_mass_tests_in_location(time::Int64,
 
       # Get number tested and sample
       n_tested = ceil(Int64,test_coverage*n_valid_node_IDs)
-      tested_nodes = rand(valid_node_IDs,n_tested)
+      tested_nodes = sample(rng,valid_node_IDs,n_tested,replace=false)
 
       for location_node_itr = 1:n_tested
 

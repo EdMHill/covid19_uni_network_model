@@ -2,7 +2,7 @@
 
 This repository contains files for performing computational simulations of a network model framework to explore SARS-CoV-2 transmission amongst a university population.
 
-https://zenodo.org/badge/300982008.svg
+[![DOI](https://zenodo.org/badge/300982008.svg)](https://zenodo.org/badge/latestdoi/300982008)
 
 The code was developed for the analysis presented in the scientific paper "Modelling SARS-CoV-2 transmission in a UK university setting" by Edward M. Hill, Benjamin D. Atkins, Matt J. Keeling, Michael J. Tildesley and Louise Dyson.
 

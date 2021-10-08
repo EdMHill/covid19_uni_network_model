@@ -1,12 +1,14 @@
-"""
+#=
 Purpose:
 Stash functions that are used with the university network model
 for performing contact tracing
-"""
+=#
+#-------------------------------------------------------------------------------
 
-"""
-Get portion of dynamic contacts to be recallable
-"""
+#-------------------------------------------------------------------------------
+# Get portion of dynamic contacts to be recallable
+#-------------------------------------------------------------------------------
+
 # In time d days before symptoms up to current day.
 function recallable_dynamic_contacts(student_ID::Int64,
                                             all_dynamic_contacts::Array{Int64,1},
@@ -70,9 +72,10 @@ function recallable_dynamic_contacts(student_ID::Int64,
     return recallable_contacts::Array{Int64,1}
 end
 
-"""
-Check contacts made in class setting
-"""
+#-------------------------------------------------------------------------------
+# Check contacts made in class setting
+#-------------------------------------------------------------------------------
+
 # In time d days before symptoms up to current day.
 # Go over list of usual class setting contacts & cohort contacts. Check if they actually occurred,
 # or if contact was absent due to isolation/other closure.
@@ -125,9 +128,10 @@ function get_study_contacts(possible_study_contacts::Array{Int64,1},
     return study_contacts::Array{Int64,1}
 end
 
-"""
-Check contacts made in society setting
-"""
+#-------------------------------------------------------------------------------
+# Check contacts made in society setting
+#-------------------------------------------------------------------------------
+
 # In time d days before symptoms up to current day.
 # Go over list of usual society contacts. Check if they actually occurred,
 # or if contact was absent due to isolation/other closure.
@@ -182,9 +186,10 @@ function get_society_contacts(possible_society_contacts::Array{Int64,1},
     return recallable_society_contacts::Array{Int64,1}
 end
 
-"""
-Perform forward CT from an identified infector
-"""
+#-------------------------------------------------------------------------------
+# Perform forward CT from an identified infector
+#-------------------------------------------------------------------------------
+
 # Comment break
 function forwardCT_from_infector!(infector_ID::Int64,
                                 CT_vars::contact_tracing_vars,

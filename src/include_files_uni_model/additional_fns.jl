@@ -1,4 +1,4 @@
-"""
+#=
 Purpose:
 Functions required to run university network model
 
@@ -34,7 +34,8 @@ Miscellaneous functions contained within this file include:
 - draw_sample_from_pmf!
 - set_infection_related_times!      (set times to infection etc.: returns inftime, symptime, lattime, hh_isolation and delay_adherence)
 - flattenall                        (Collapse nested structures into a single vector)
-"""
+=#
+#-------------------------------------------------------------------------------
 
 function populate_inclass!(inclass::Array{Int64,2},
                             sameday::Int64,
@@ -169,12 +170,12 @@ function reinitialise_society_params!(society_info::Array{society_params,1},
                                     endtime::Int64,
                                     rng::MersenneTwister)
 
-"""
+#=
 Outline of steps, iterating over each society:
 - Initialise the schedule array
 - Assign the schedule array. Based on 3 days randomly scattered throughout week.
 - reinitialise variables as required
-"""
+=#
 
 
     # Get number of societies in the system
@@ -971,9 +972,10 @@ function find_network_parameters(n_cohorts::Int64;
             attendence_propns = ones(4,3)  # proportion of those in each each cohort that will attend f2f classes if they are running
         end
 
-        """
-        Define network associated parameters
-        """
+        #-----------------------------------------------------------------------
+        # DEFINE NETWORK ASSOCIATED PARAMETERS
+        #-----------------------------------------------------------------------
+
         # Set up class_degree_distribution
         # Distinct values for undergrad & postgrad
         class_degree_distribution_array = repeat([Distributions.LogNormal(1.749,1.331) Distributions.LogNormal(1.749,1.331) Distributions.LogNormal(1.223,1.125)],
@@ -992,9 +994,11 @@ function find_network_parameters(n_cohorts::Int64;
             between_class_contact_probs = [1.0],  # If single entry, will be replicated across all cohorts
             dynamic_social_contact_degree_distribution = dynamic_social_contact_degree_distribution_array)
 
-        """
-        Define study associated parameters
-        """
+
+        #-----------------------------------------------------------------------
+        # DEFINE STUDY ASSOCIATED PARAMETERS
+        #-----------------------------------------------------------------------
+
         # Set up class size means and stan. dev.
         class_size_mean_array = repeat([25. 25. 5.], 4, 1)
         class_size_sd_array = repeat([0. 0. 1.], 4, 1)
@@ -1016,9 +1020,11 @@ function find_network_parameters(n_cohorts::Int64;
             attendence_propns = ones(28,3)  # proportion of those in each each cohort that will attend f2f classes if they are running
         end
 
-        """
-        Define network associated parameters
-        """
+
+        #-----------------------------------------------------------------------
+        # DEFINE NETWORK ASSOCIATED PARAMETERS
+        #-----------------------------------------------------------------------
+
         # Set up class_degree_distribution
         # Distinct values for undergrad & postgrad
         class_degree_distribution_array = repeat([Distributions.LogNormal(1.749,1.331) Distributions.LogNormal(1.749,1.331) Distributions.LogNormal(1.223,1.125)],
@@ -1037,9 +1043,11 @@ function find_network_parameters(n_cohorts::Int64;
             between_class_contact_probs = [1.0],  # If single entry, will be replicated across all cohorts
             dynamic_social_contact_degree_distribution = dynamic_social_contact_degree_distribution_array)
 
-        """
-        Define study associated parameters
-        """
+
+        #-----------------------------------------------------------------------
+        # DEFINE STUDY ASSOCIATED PARAMETERS
+        #-----------------------------------------------------------------------
+
         # Set up class size means and stan. dev.
         class_size_mean_array = repeat([25. 25. 5.], 28, 1)
         class_size_sd_array = repeat([0. 0. 1.], 28, 1)
@@ -1055,9 +1063,10 @@ function find_network_parameters(n_cohorts::Int64;
     return network_parameters, class_generation_parameters
 end
 
-"""
-Transmission related fns
-"""
+
+#-----------------------------------------------------------------------
+# TRANSMISSION RELATED FUNCTIONS
+#-----------------------------------------------------------------------
 
 function transmit_over!(student_info::Array{student_params,1},
                     transmission_risk::Float64,
@@ -1274,9 +1283,11 @@ function transmit_over_societies!(student_info::Array{student_params,1},
     end
 end
 
-"""
-Functions to set up transmission rates within household for each individual
-"""
+
+#-----------------------------------------------------------------------
+# FUNCTIONS TO SET UP TRANSMISSION RATES WITHIN HOUSEHOLD FOR EACH INDIVIDUAL
+#-----------------------------------------------------------------------
+
 # Single household risk type
 function assign_household_transmit_onegroup!(RNGseed::Int64,
                                     network_parameters::network_params,
@@ -1501,9 +1512,11 @@ function assign_household_transmit_multigrouptest!(RNGseed::Int64,
 end
 
 
-"""
-Functions to set up transmission rates within cohorts and societies for each individual
-"""
+
+#-----------------------------------------------------------------------
+# FUNCTIONS TO SET UP TRANSMISSION RATES WITHIN COHORTS AND SOCIETIES FOR EACH INDIVIDUAL
+#-----------------------------------------------------------------------
+
 # Cohort transmission risk
 function assign_cohort_transmit!(RNGseed::Int64,
                                     network_parameters::network_params,
@@ -1616,9 +1629,11 @@ function assign_dynamic_social_transmit!(RNGseed::Int64,
     return nothing
 end
 
-"""
-Functions to reinitialise states at start of each run
-"""
+
+#-----------------------------------------------------------------------
+# FUNCTIONS TO REINITIALISE STATES AT START OF EACH RUN
+#-----------------------------------------------------------------------
+
 # Node states, household inf delay & CT vars
 function reinitialise_node_states!(states::student_states)
     lmul!(0,states.timelat)
@@ -1735,9 +1750,10 @@ function reinitialise_CT_vars!(CT_vars::contact_tracing_vars,n_students::Int64, 
     lmul!(0,CT_vars.Recall_infector)
 end
 
-"""
-Misc. fns
-"""
+
+#-----------------------------------------------------------------------
+# MISC. FUNCTIONS
+#-----------------------------------------------------------------------
 
 function draw_sample_from_pmf(csum_pmf::Array{Float64,1},
                                 rng::MersenneTwister;

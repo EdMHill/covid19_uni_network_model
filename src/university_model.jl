@@ -1,11 +1,12 @@
-"""
+#=
 Purpose:
 A network model to explore transmission amongst a university population
-"""
+=#
+#-------------------------------------------------------------------------------
 
-"""
-Set paths & load environment
-"""
+#-------------------------------------------------------------------------------
+# Set paths & load environment
+#-------------------------------------------------------------------------------
 
 #Set paths
 cd(dirname(@__FILE__))
@@ -14,16 +15,16 @@ cd(dirname(@__FILE__))
 using Pkg
 Pkg.activate("../")
 
-"""
-Load packages
-"""
+#-------------------------------------------------------------------------------
+# Load packages
+#-------------------------------------------------------------------------------
 #Required packages
 using MAT, Distributions
 using LinearAlgebra, Random, DelimitedFiles, Parameters
 
-"""
-Load supporting files
-"""
+#-------------------------------------------------------------------------------
+# Load supporting files
+#-------------------------------------------------------------------------------
 # Files containing other functions needed to run the model
 include("include_files_uni_model/parametertypes.jl")
 include("include_files_uni_model/contact_tracing_fns.jl")
@@ -35,9 +36,9 @@ include("include_files_uni_model/seed_initial_states_fns.jl")
 include("include_files_uni_model/student_travel_fns.jl")
 include("include_files_uni_model/main_function.jl")
 
-"""
-Set variables from ARGS
-"""
+#-------------------------------------------------------------------------------
+# Set variables from ARGS
+#-------------------------------------------------------------------------------
 args = ARGS
 
 # If running locally from REPL, will not have any input ARGS
@@ -92,9 +93,9 @@ seed_initial_states_fn = getfield(Main, s) #Make Symbol a callable function
 # Specify scenario to be run
 runsets = eval(Meta.parse(args[9]))
 
-"""
-Set up incubation & infectivity distributions
-"""
+#-------------------------------------------------------------------------------
+# Set up incubation & infectivity distributions
+#-------------------------------------------------------------------------------
 
 # If needed, set up a different incubation period distribution
 # Default: Erlang(6,0.88)
@@ -110,9 +111,9 @@ Set up incubation & infectivity distributions
 # dist_infectivity = ones(10) # if we don't want to have a distribution of infectiousness
 
 
-"""
-Set up adherence delay distribution
-"""
+#-------------------------------------------------------------------------------
+# Set up adherence delay distribution
+#-------------------------------------------------------------------------------
 # Set a different distribution for delay in adhering in guidance
 # Will need to pass delay_adherence_pmf_alt into infection_params creation:
 #  e.g. infection_parameters = infection_params(...,
@@ -124,9 +125,9 @@ Set up adherence delay distribution
 #     error("delay_adherence_pmf_alt must sum to 1. Currently sums to $(sum(delay_adherence_pmf_alt))")
 # end
 
-"""
-Set up testing related distributions
-"""
+#-------------------------------------------------------------------------------
+# Set up testing related distributions
+#-------------------------------------------------------------------------------
 
 # If needed, set a different probability mass function for delay until test result received.
 # Will then need to pass CT_delay_until_test_result_pmf_alt into CT_params creation:
@@ -145,9 +146,9 @@ Set up testing related distributions
 #                                 test_false_negative_vec = test_false_negative_vec_alt)
 # test_false_negative_vec_alt = 0.2*ones(20)
 
-"""
-Specify use of any additional, trigger interventions
-"""
+#-------------------------------------------------------------------------------
+# Specify use of any additional, trigger interventions
+#-------------------------------------------------------------------------------
 # Have as a vector input.
 # -> Entry per intervention
 # -> Within intervention fns, can call independently made condition fns
@@ -163,18 +164,18 @@ Specify use of any additional, trigger interventions
 
 
 
-"""
-Specify function to allocate students to department/cohort & classes
-"""
+#-------------------------------------------------------------------------------
+# Specify function to allocate students to department/cohort & classes
+#-------------------------------------------------------------------------------
 # If needed, set a different class assignment function from the default
 generate_classes_fn_alt = generate_classes_all_students # generate_classes_campus_only
 #         # Will need to pass as optional input to worker_pattern_network_run:
 #         #  e.g. ...=  worker_pattern_network_run(...,
 #                                 generate_classes_fn = generate_classes_fn_alt)
 
-"""
-Specify function to assign households and construct household contact network
-"""
+#-------------------------------------------------------------------------------
+# Specify function to assign households and construct household contact network
+#-------------------------------------------------------------------------------
 # If needed, set a different household assignment function from the default
 # generate_student_households_fn_alt = assign_households_campus_only #assign_households_all_students
 # generate_student_households_fn_alt = assign_households_by_cohort # assign_households_all_students
@@ -184,9 +185,9 @@ Specify function to assign households and construct household contact network
 #                                 generate_student_households_fn! = generate_student_households_fn_alt)
 
 
-"""
-Specify household transmission risk by group
-"""
+#-------------------------------------------------------------------------------
+# Specify household transmission risk by group
+#-------------------------------------------------------------------------------
 # # If needed, set a different distribution of transrisk_household_group from the default
 # # Will then need to pass transrisk_household_group_alt into infection_params creation:
 # #  e.g. infection_parameters = infection_params(...,
@@ -199,16 +200,16 @@ assign_household_transrisk_fn_alt = assign_household_transmit_household_size!
 #         #  e.g. ...=  worker_pattern_network_run(...,
 #         #                                 assign_household_transrisk_fn = assign_household_transrisk_fn_alt)
 
-"""
-Specify society assignment function
-"""
+#-------------------------------------------------------------------------------
+# Specify society assignment function
+#-------------------------------------------------------------------------------
 # If needed, set a different assign_societies_fn from the default
 assign_societies_fn_alt = assign_societies_from_aggregated_data
 
 #         # Will need to pass as optional input to worker_pattern_network_run:
 #         #  e.g. ...=  worker_pattern_network_run(...,
 #
-      #                                 assign_societies_fn = assign_societies_fn_alt)
+#                                 assign_societies_fn = assign_societies_fn_alt)
 
 ## Iterate over the various configurations
 for run_it = 1:length(runsets)

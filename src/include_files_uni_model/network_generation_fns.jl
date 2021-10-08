@@ -1,4 +1,4 @@
-"""
+#=
 Purpose:
 Functions to produce the network layers
 
@@ -42,11 +42,13 @@ Also a batch of functions to regenerate layers of the network if needed (can be 
 - regenerate_class_contacts                (static worker contact layer)
 - regenerate_society_contacts               (society contact layer)
 - regenerate_dynamic_student_contacts        (dynamic worker contact layer)
-"""
+=#
+#-------------------------------------------------------------------------------
 
-"""
-Functions for allocating students to classes, not using data
-"""
+
+#-------------------------------------------------------------------------------
+### FUNCTIONS FOR ALLOCATING STUDENTS TO CLASSES, NOT USING DATA
+#-------------------------------------------------------------------------------
 
 # General structure:
 # Inputs:
@@ -168,9 +170,11 @@ function generate_classes_default(n_students::Int64,
 end
 
 
-"""
-Functions for allocating students to classes, using data
-"""
+
+#-------------------------------------------------------------------------------
+### FUNCTIONS FOR ALLOCATING STUDENTS TO CLASSES, USING DATA
+#-------------------------------------------------------------------------------
+
 
 # Get cohort data from file
 function get_oncampus_cohort_data(n_students::Int64, n_depts::Int64)
@@ -441,9 +445,11 @@ function generate_classes_all_students(n_students::Int64,
             nodes_by_class::Array{Array{Array{Int64,1},1},1}
 end
 
-"""
-Functions to produce the initial network layers
-"""
+
+#-------------------------------------------------------------------------------
+# FUNCTIONS TO PRODUCE THE INITIAL NETWORK LAYERS
+#-------------------------------------------------------------------------------
+
 # ASSUMPTIONS:
 # Student contacts are split into 4 settings: class, social (fixed), household & dynamic social
 # If a class is inactive (no face-to-face classes), there are NO class setting contacts
@@ -621,9 +627,10 @@ function generate_contacts_uni(n_students::Int64,
             society_contacts_per_node::Array{Int64,2}
 end
 
-"""
-Functions for assigning students to societies
-"""
+
+#-------------------------------------------------------------------------------
+# FUNCTIONS FOR ASSIGNING STUDENTS TO SOCIETIES
+#-------------------------------------------------------------------------------
 
 function assign_societies_one_per_student(student_info::Array{student_params,1},
                             society_generation_parameters::society_generation_params,
@@ -900,9 +907,10 @@ function assign_societies_from_individual_data(student_info::Array{student_param
     return society_info::Array{society_params,1}
 end
 
-"""
-Functions for generating househould contacts
-"""
+
+#-------------------------------------------------------------------------------
+# FUNCTIONS FOR GENERATING HOUSEHOLD CONTACTS
+#-------------------------------------------------------------------------------
 
 # General structure:
 # Inputs:
@@ -1030,10 +1038,10 @@ function get_on_campus_households_by_cohort!(network_parameters::network_params)
 
     @unpack lowest_campus_denomination, student_info = network_parameters
 
-    """
+    #=
     Use the campus accom structure data file
     Also take the deparmental allocation. Sort ascending. Allocate in order.
-    """
+    =#
 
     # Use the campus accom structure data file
     # Get the campus data to be loaded
@@ -1345,9 +1353,9 @@ function assign_households_fn!(generate_student_households_fn_name::String,
      else
         # Assignment to households uses accommodation hierarchy
 
-        """
+        #=
         On campus household assignment
-        """
+        =#
         if (generate_student_households_fn_name == "assign_households_campus_only") ||
             (generate_student_households_fn_name == "assign_households_all_students")
             household_member_list,
@@ -1378,9 +1386,9 @@ function assign_households_fn!(generate_student_households_fn_name::String,
                                                                 student_info
                                                                 )
 
-        """
+        #=
         Off campus household assignment
-        """
+        =#
         n_households = 0
         if  (generate_student_households_fn_name == "assign_households_all_students") ||
                 (generate_student_households_fn_name == "assign_households_by_cohort")
@@ -1447,9 +1455,9 @@ function assign_households_fn!(generate_student_households_fn_name::String,
                 n_households::Int64
 end
 
-"""
-Functions for use with configuration model
-"""
+#-------------------------------------------------------------------------------
+# FUNCTIONS FOR USE WITH THE CONFIGURATION MODEL
+#-------------------------------------------------------------------------------
 
 #### Class/workplace version ####
 function configuration_model!(student_info::Array{student_params,1},
@@ -1633,20 +1641,16 @@ function generate_dynamic_student_contacts(RNGseed::Int64,
 # Outputs:
 # dynamic_social_contacts - Per node, a record of dynamic social contacts made on each day
 
-    """
-    Set the RNG
-    """
+    # Set the RNG
     rng = MersenneTwister(RNGseed)
 
-    """
-    Initialise vector of vectors storing IDs of contacts for each node
-    """
+    # Initialise vector of vectors storing IDs of contacts for each node
     dynamic_social_contacts = Array{Array{Int64,1},2}(undef,endtime,n_students)
 
-    """
+    #=
     Iterate over all nodes
     Assign dynamic social contacts for each timestep
-    """
+    =#
     for student_itr = 1:n_students
         # Get dynamic group type for student_itr
         node_dynamic_grp_ID = student_info[student_itr].cohort_ID
@@ -1679,9 +1683,11 @@ function generate_dynamic_student_contacts(RNGseed::Int64,
     return dynamic_social_contacts::Array{Array{Int64,1},2}
 end
 
-"""
-Functions used to generate dynamic accommodation contacts
-"""
+
+#-------------------------------------------------------------------------------
+# FUNCTIONS USED TO GENERATE DYNAMIC ACCOMODATION CONTACTS
+#-------------------------------------------------------------------------------
+
 # Function to get dynamic accommodation contacts for each layer of accommodation hierarchy
 function get_layer_dynamic_accom_contacts!(dynamic_accommodation_contacts::Array{Array{Int64,1},3},
                                             RNGseed::Int64,
@@ -1705,14 +1711,11 @@ function get_layer_dynamic_accom_contacts!(dynamic_accommodation_contacts::Array
 # Outputs:
 # Directly alters dynamic_accommodation_contacts
 
-    """
-    Set the RNG
-    """
+
+    # Set the RNG
     rng = MersenneTwister(RNGseed)
 
-    """
-    Assign column entry of dynamic_accommodation_contacts based on accom_hierarchy_name
-    """
+    # Assign column entry of dynamic_accommodation_contacts based on accom_hierarchy_name
     if accom_hierarchy_name == "Hall"
         accom_hierarchy_level = 1
     elseif accom_hierarchy_name == "Block"
@@ -1723,9 +1726,10 @@ function get_layer_dynamic_accom_contacts!(dynamic_accommodation_contacts::Array
         error("Illegal string provided for accom_hierarchy_name. Must be Hall, Block or Floor.")
     end
 
-    """
-    Check contacts in that accommodation unit. Push to vector if contact probability accepted
-    """
+    #=
+    Check contacts in that accommodation unit.
+    Push to vector if contact probability accepted
+    =#
     n_persons_to_check = length(persons_to_check)
     track_contact_status = zeros(Int64,n_persons_to_check)
     for time_itr = 1:endtime
@@ -1736,9 +1740,7 @@ function get_layer_dynamic_accom_contacts!(dynamic_accommodation_contacts::Array
             end
         end
 
-        """
-        Intialise & then populate the contacts vector
-        """
+        # Intialise & then populate the contacts vector
         n_contacts_made = sum(track_contact_status)
         allocation_idx = 1  # Counter to allocate the ID of contact to vector in specified index position
         dynamic_accommodation_contacts[time_itr,accom_hierarchy_level,student_ID] = zeros(Int64,n_contacts_made)
@@ -1772,23 +1774,19 @@ function generate_dynamic_campus_accom_contacts(RNGseed::Int64,
 # dynamic_accom_contacts - Per node, a record of dynamic accommodation (on campus) contacts made on each day
 
 
-    """
-    Unpack required variables
-    """
+    # Unpack required variables
     @unpack contact_prob_floor_level, contact_prob_block_level, contact_prob_hall_level = network_parameters
     @unpack household_member_list, floor_member_list, block_member_list = contacts
 
 
-    """
-    Initialise vector of vectors storing IDs of contacts for each node
-    """
+    # Initialise vector of vectors storing IDs of contacts for each node
     dynamic_accommodation_contacts = Array{Array{Int64,1},3}(undef,endtime,3,n_students)
 
-    """
+    #=
     Iterate over all nodes
     Check if that student is living on campus
     If so, assign contacts with others from floor, block, hall
-    """
+    =#
     for student_itr = 1:n_students
 
         if student_info[student_itr].household_info.on_campus_accom==true # Add dynamic links, if living on campus
@@ -1872,9 +1870,10 @@ function generate_dynamic_campus_accom_contacts(RNGseed::Int64,
     return dynamic_accommodation_contacts::Array{Array{Int64,1},3}
 end
 
-"""
-Functions for use with Erdos-Renyi network construction
-"""
+
+#-------------------------------------------------------------------------------
+# FUNCTIONS FOR USE WITH THE ERDOS-RENYI NETWORK CONSTRUCTION
+#-------------------------------------------------------------------------------
 
 function ER_model_uni!(student_info::Array{student_params,1},
                     n_students::Int64,
@@ -1956,20 +1955,16 @@ function generate_dynamic_student_contacts(RNGseed::Int64,
 # Outputs:
 # dynamic_social_contacts - Per node, a record of dynamic social contacts made on each day
 
-    """
-    Set the RNG
-    """
+    # Set the RNG
     rng = MersenneTwister(RNGseed)
 
-    """
-    Initialise vector of vectors storing IDs of contacts for each node
-    """
+    # Initialise vector of vectors storing IDs of contacts for each node
     dynamic_social_contacts = Array{Array{Int64,1},2}(undef,endtime,n_students)
 
-    """
+    #=
     Iterate over all nodes
     Assign dynamic social contacts for each timestep
-    """
+    =#
     for student_itr = 1:n_students
             # Get dynamic  group type for student_itr
             node_dynamic_grp_ID = student_info[student_itr].cohort_ID
@@ -1999,9 +1994,11 @@ function generate_dynamic_student_contacts(RNGseed::Int64,
     return dynamic_social_contacts::Array{Array{Int64,1},2}
 end
 
-"""
-Functions to regenerate specific layers of the network
-"""
+
+#-------------------------------------------------------------------------------
+# FUNCTIONS TO REGENERATE SPECIFIC LAYERS OF THE NETWORK
+#-------------------------------------------------------------------------------
+
 # Were worker proportion to change from initial value to a non-zero value
 # this function allows regeneration of would_attend_f2f_classes for each node &
 # reconstruct work networks.
@@ -2091,16 +2088,15 @@ function regenerate_society_contacts(network_parameters::network_params,
 
     @unpack student_info, prob_social_contact, society_info = network_parameters
 
-    """
-    Set the RNG
-    """
+
+    # Set the RNG
     rng = MersenneTwister(RNGseed)
 
-    """
+    #=
     Draw new collection of possible social contacts
-    """
-    # Initialise vector of vectors storing IDs of contacts for each node in social
-    # and household settings
+    Initialise vector of vectors storing IDs of contacts for each node in social
+    and household settings
+    =#
     n_societies = length(society_info)
     society_contacts = Array{Array{Int64,1},2}(undef,n_students,n_societies)
 
@@ -2171,16 +2167,14 @@ function regenerate_dynamic_student_contacts(dynamic_social_contacts::Array{Arra
 # Outputs:
 # dynamic_social_contacts - The now amended record of dynamic worker contacts made on each day
 
-    """
-    Set the RNG
-    """
+    # Set the RNG
     rng = MersenneTwister(RNGseed)
 
-    """
+    #=
     Iterate over all nodes
     For those returning to work in role with dynamic contacts,
     assign dynamic contacts for each timestep
-    """
+    =#
     for student_itr = 1:n_students
         if student_info[student_itr].would_attend_f2f_classes==1 # Add dynamic links, if returned to work
             # Get dynamic worker group type for student_itr

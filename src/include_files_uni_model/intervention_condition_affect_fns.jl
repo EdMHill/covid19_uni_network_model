@@ -1,4 +1,4 @@
-"""
+#=
 Purpose:
 Define intervention functions
 
@@ -20,13 +20,13 @@ accommodation functions
 - accom_lockdown_unit_alter_status! (Update those students in accommodation units lockdown measures are being enforced)
 - accom_lockdown_hall_level!, accom_lockdown_block_level!, accom_lockdown_floor_level!,
    accom_lockdown_household_level!  (lockdown accommodation, with conditions at the specified level)
-"""
+=#
+#-------------------------------------------------------------------------------
 
-
-"""
+#=
 Condition functions. Use time and/or disease state variable values
 For example, if incidence of symptomatic infection exceeds given level, apply restriction
-"""
+=#
 
 function condition_close_example(intervention_trigger_input_data::intervention_data_feeds,
                                         time::Int64,
@@ -70,9 +70,9 @@ end
 
 
 
-"""
+#=
 Cohort level affect functions.
-"""
+=#
 
 # Dummy example
 function dummy_example!(network_parameters::network_params,
@@ -170,9 +170,9 @@ function affect_open_example!(network_parameters::network_params,
    end
 end
 
-"""
+#=
 Society related functions
-"""
+=#
 # Check if society can remain active based on recent reported cases
 function society_incidence_check!(network_parameters::network_params,
                                  intervention_trigger_input_data::intervention_data_feeds,
@@ -260,9 +260,9 @@ function society_incidence_check!(network_parameters::network_params,
 end
 
 
-"""
+#=
 accommodation related functions
-"""
+=#
 
 # Call function to do condition check
 function accom_lockdown_unit_check(unit_resident_list::Array{Int64,1},

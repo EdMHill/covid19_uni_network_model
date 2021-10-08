@@ -1,7 +1,7 @@
-"""
+#=
 Purpose:
 Plot outputs from university model sensitivity runs
-"""
+=#
 
 #Set paths
 cd(dirname(@__FILE__))
@@ -31,9 +31,10 @@ svty_variable_ops = Dict("RNGseed" => [100],  #[100, 200, 300],
                             "No control simulations" => [1000]
                             )
 
-"""
+#=
 Iterate over sensitivity configs
-"""
+=#
+
 # In turn, produce plots for each batch of runs
 for svty_itr = 1:length(svty_variables)
 
@@ -91,10 +92,10 @@ for svty_itr = 1:length(svty_variables)
     # Close file
     close(file)
 
-    """
+    #=
     If required, get transmission setting data into combined array
     Setting order: Household, accom (dynamic), cohort, society, social (dynamic)
-    """
+    =#
     n_timesteps::Int64 = size(household_infection_count,1)
     if variable_name!="mawidth"
         # Initialise combined array
@@ -121,9 +122,9 @@ for svty_itr = 1:length(svty_variables)
     # Consider values up to final timepoint less infectious period (so full infectious period has been seen)
     Rt_final_timepoint = n_timesteps
 
-    """
+    #=
     Construct plots for each configuration
-    """
+    =#
     for var_itr = 1:n_vars
 
         # Set default moving average width for Rt

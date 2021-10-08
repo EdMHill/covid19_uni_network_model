@@ -1,6 +1,6 @@
-"""
-Main function
-"""
+#-------------------------------------------------------------------------------
+# MAIN FUNCTION
+#-------------------------------------------------------------------------------
 
 # Run outbreak on network
 function uni_network_run(RNGseed::Int64,
@@ -91,9 +91,9 @@ function uni_network_run(RNGseed::Int64,
 
 ##
 
-     """
-     Unpack required variables
-     """
+    #---------------------------------------------------------------------------
+    # Unpack required variables
+    #---------------------------------------------------------------------------
     if contact_tracing_active==true
         @unpack CT_engagement, CT_delay_until_test_result_pmf, CT_days_before_symptom_included, test_detection_prob_vec,
             CT_caused_isol_limit, dynamic_contacts_recalled_propn, social_contacts_recalled_propn, prob_backwards_CT,
@@ -117,14 +117,14 @@ function uni_network_run(RNGseed::Int64,
     @unpack n_cohorts = class_generation_parameters
     @unpack society_types = society_generation_parameters
 
-    """
-    Set the random number generator
-    """
+    #---------------------------------------------------------------------------
+    # Set the random number generator
+    #---------------------------------------------------------------------------
     rng = MersenneTwister(RNGseed)
 
-    """
-    Initialise study group
-    """
+    #---------------------------------------------------------------------------
+    # Initialise study groups
+    #---------------------------------------------------------------------------
 
     # generate_classes in network_generation_fns.jl
     student_info::Array{student_params,1},
@@ -142,9 +142,9 @@ function uni_network_run(RNGseed::Int64,
     end
     network_parameters.cohort_f2f_study_active = cohort_f2f_study_active
 
-    """
-    Set up society membership
-    """
+    #-------------------------------------------------------------------------------
+    # Set up society membership
+    #-------------------------------------------------------------------------------
     society_info::Array{society_params,1} = assign_societies_fn(student_info,
                                                                 society_generation_parameters,
                                                                 endtime,
@@ -163,10 +163,10 @@ function uni_network_run(RNGseed::Int64,
     end
     network_parameters.society_f2f_active = society_f2f_active
 
-    """
-    Generate contacts within work settings, societies & households
-    """
-    # Generate contact network in work settings & societies.
+    #---------------------------------------------------------------------------
+    # Generate contacts within work settings, societies & households
+    #---------------------------------------------------------------------------
+
     # Find relevant function in "include_files_uni_model/network_generation_fns.jl"
         contacts::contacts_struct,
         work_or_study_group_contacts_per_node::Array{Int64,1},
@@ -191,9 +191,10 @@ function uni_network_run(RNGseed::Int64,
     # Update daily_record_atsociety in contacts, to use number of societies
     contacts.daily_record_atsociety = zeros(Int64,endtime,length(society_info),n_students)
 
-    """
-    Generate social dynamic contacts
-    """
+    #---------------------------------------------------------------------------
+    # Generate social dynamic contacts
+    #---------------------------------------------------------------------------
+
     # Set up dynamic worker contacts, in network_generation_fns.jl
     if network_parameters.network_generation_method == "ER"
         dynamic_social_contacts = generate_dynamic_student_contacts(RNGseed,
@@ -215,9 +216,9 @@ function uni_network_run(RNGseed::Int64,
 
     contacts.dynamic_social_contacts = dynamic_social_contacts
 
-    """
-    Generate on-campus accommodation dynamic contacts
-    """
+    #---------------------------------------------------------------------------
+    # Generate on-campus accommodation dynamic contacts
+    #---------------------------------------------------------------------------
 
     dynamic_accommodation_contacts = @time generate_dynamic_campus_accom_contacts(RNGseed,
                                                                                     n_students,
@@ -230,9 +231,10 @@ function uni_network_run(RNGseed::Int64,
     contacts.dynamic_accommodation_contacts = dynamic_accommodation_contacts
 
 
-    """
-    Generate transmission risks
-    """
+    #---------------------------------------------------------------------------
+    # Generate transmission risks
+    #---------------------------------------------------------------------------
+
     # Relevant functions are listed in "include_files_network_model/additional_fns.jl"
     assign_household_transrisk_fn(RNGseed,
                                         network_parameters,
@@ -256,9 +258,9 @@ function uni_network_run(RNGseed::Int64,
                                     transrisk_dynamic_social_mean,
                                     transrisk_dynamic_social_sd)
 
-    """
-    Initialise storage arrays
-    """
+    #---------------------------------------------------------------------------
+    # Initialise storage arrays
+    #---------------------------------------------------------------------------
 
     # Initialise output structure
     output = sim_outputs(endtime=endtime,countfinal=countfinal,n_students=n_students,
@@ -290,9 +292,10 @@ function uni_network_run(RNGseed::Int64,
     end
     csum_delay_household_inf = cumsum(delay_household_infection_pmf)
 
-    """
-    If required, initialise contract tracing related variables
-    """
+    #---------------------------------------------------------------------------
+    # If required, initialise contract tracing related variables
+    #---------------------------------------------------------------------------
+
     # If contact tracing in use, create variables
     if contact_tracing_active == true
 
@@ -309,9 +312,9 @@ function uni_network_run(RNGseed::Int64,
         CT_vars = contact_tracing_vars()
     end
 
-    """
-    If required, initialise work/study group inactivation variables
-    """
+    #---------------------------------------------------------------------------
+    # If required, initialise work/study group inactivation variables
+    #---------------------------------------------------------------------------
     work_or_study_group_memory = Array{Array{Int64,2},1}(undef, n_cohorts) # initialise the memory for each work/study group
 
     if work_study_group_closure_active
@@ -330,29 +333,29 @@ function uni_network_run(RNGseed::Int64,
         end
     end
 
-    """
-    If required, initialise triggered intervention variables
-    """
+    #---------------------------------------------------------------------------
+    # If required, initialise triggered intervention variables
+    #---------------------------------------------------------------------------
+
     # Check if any intervetion were specified
     if isassigned(intervention_fns)
         # Number of intervention sets provided is number of elements of intervention_fns
         n_intervention_fns = length(intervention_fns)
     end
 
-    """
-    Run replicates
-    """
+    #---------------------------------------------------------------------------
+    # Run replicates
+    #---------------------------------------------------------------------------
+
     # Perform countfinal number of replicates
     for count=1:countfinal
 
-        """
-        Set the RNG
-        """
+        # Set the RNG
         rng = MersenneTwister(RNGseed+count)
 
-        """
-        Reinitialisation phase
-        """
+        #-----------------------------------------------------------------------
+        # Reinitialisation phase
+        #-----------------------------------------------------------------------
 
         # Re-initiailise node related arrays
         lmul!(0,dayon)
@@ -382,15 +385,16 @@ function uni_network_run(RNGseed::Int64,
         lmul!(0,infected_by)
         lmul!(0,time_to_symps)
 
-        """
-        Set course of infection times
-        """
+        #-----------------------------------------------------------------------
+        # Set course of infection times
+        #-----------------------------------------------------------------------
+
         # set times to infection etc.: returns inftime, symptime, lattime, hh_isolation and delay_adherence
         set_infection_related_times!(time_to_symps,states,isolation,adherence,csum_delay_adherence,d_incub,n_students,rng)
 
-        """
-        Seed non-susceptible disease states
-        """
+        #-----------------------------------------------------------------------
+        # Seed non-susceptible disease states
+        #-----------------------------------------------------------------------
 
         # Draw asymptomatic probability for current replicate
         probasymp = rand(rng,probasymp_dist)
@@ -412,9 +416,9 @@ function uni_network_run(RNGseed::Int64,
                                                         recov_propn,
                                                         output)
 
-       """
-       Update output time series with initial conditions
-       """
+       #------------------------------------------------------------------------
+       # Update output time series with initial conditions
+       #------------------------------------------------------------------------
        # Update time series for latent & infecteds after assigning initial
        # infecteds
        output.numlat[1,count] = n_initial_latent
@@ -427,9 +431,10 @@ function uni_network_run(RNGseed::Int64,
        output.prevrec[1,count] = n_initial_recovereds
 
 
-       """
-       Reset contact tracing variables
-       """
+       #------------------------------------------------------------------------
+       # Reset contact tracing variables
+       #------------------------------------------------------------------------
+
         # If required, set up and/or reinitialise contact tracing related variables
         if contact_tracing_active == true
             reinitialise_CT_vars!(CT_vars, n_students, rng, CT_parameters, states.delay_adherence,csum_test_result_delay,max_test_result_delay)
@@ -442,18 +447,19 @@ function uni_network_run(RNGseed::Int64,
        # (having not participated in CT before)
        infector_trace_count = [0]
 
-        """
-        Run single replicate
-        """
+        #-----------------------------------------------------------------------
+        # Run single replicate
+        #-----------------------------------------------------------------------
         for time=1:endtime
 
             # Initial timepoint is for initial conditions
             # Set row to accessed in output arrays for this timestep
             output_time_idx = time + 1
 
-             """
-             Reinitialise variables at start of timestep
-             """
+            #-------------------------------------------------------------------
+            # Reinitialise variables at start of timestep
+            #-------------------------------------------------------------------
+
             # Reinitialise timestep specific values
             lmul!(0,states.rep_inf_this_timestep)
 
@@ -470,18 +476,17 @@ function uni_network_run(RNGseed::Int64,
             end
 
 
-            """
-            Assign outputs
-            """
+            #-------------------------------------------------------------------
+            # Assign outputs
+            #-------------------------------------------------------------------
             # Assign counts in each disease state to array
             output.numlat[output_time_idx,count] = output.numlat[output_time_idx-1,count]
             output.numinf[output_time_idx,count] = output.numinf[output_time_idx-1,count]
             output.numrep[output_time_idx,count] = output.numrep[output_time_idx-1,count]
 
-            """
-            Increment counters
-            """
+            #-------------------------------------------------------------------
             # Increment counters if node is currently in that state.
+            #-------------------------------------------------------------------
             if contact_tracing_active==true
                 increment_counters!(student_info,CT_vars,states,
                     household_isoltime,symp_isoltime,asymp_isoltime,
@@ -493,9 +498,10 @@ function uni_network_run(RNGseed::Int64,
                     household_isoltime,symp_isoltime,asymp_isoltime,contact_tracing_active) # in additional_fns.jl
             end
 
-            """
-            Increment infection process
-            """
+            #-------------------------------------------------------------------
+            # Increment infection process
+            #-------------------------------------------------------------------
+
            # If come to the end of latent time, move to infectious time etc
            for student_itr = 1:n_students
                 # if the node has reached the end of latent infection
@@ -699,9 +705,10 @@ function uni_network_run(RNGseed::Int64,
                 end
             end
 
-            """
-            Record whether individuals are in isolation. Set study and society attendance status for timestep.
-            """
+            #-------------------------------------------------------------------
+            # Record whether individuals are in isolation. Set study and society attendance status for timestep.
+            #-------------------------------------------------------------------
+
             # record whether individuals are in isolation,
             # & whether attending in person classes/staff are at workplace
             # & whether they attend a society that day
@@ -757,7 +764,7 @@ function uni_network_run(RNGseed::Int64,
             end
 
 
-            """
+            #=
             Transmit infections
 
             Structure:
@@ -765,7 +772,8 @@ function uni_network_run(RNGseed::Int64,
             - In class/at workplace setting
             - Society contacts
             - Dynamic contacts
-            """
+            =#
+
             # Iterate over nodes that may be able to transmit infection
             for student_itr = 1:n_students
                 if ((states.timeinf[student_itr]>0) | (states.timesymp[student_itr]>0)) &&
@@ -897,9 +905,10 @@ function uni_network_run(RNGseed::Int64,
                 end
             end
 
-            """
-            Perform contact tracing
-            """
+            #-------------------------------------------------------------------
+            # Perform contact tracing
+            #-------------------------------------------------------------------
+
             # If in use, enact contact tracing from index cases reported today
             if contact_tracing_active == true
 
@@ -1133,9 +1142,10 @@ function uni_network_run(RNGseed::Int64,
             end
 
 
-            """
-            Assign prevalence & isolation outputs
-            """
+            #-------------------------------------------------------------------
+            # Assign prevalence & isolation outputs
+            #-------------------------------------------------------------------
+
             # For this timestep, get number isolating
             # and if they are latent infected or infectious on current timestep
             for student_itr=1:n_students
@@ -1276,10 +1286,10 @@ function uni_network_run(RNGseed::Int64,
                 end
             end
 
-            """
-            Reactive inactivation of in person classes/society meet ups
-            Check if needed
-            """
+            #-------------------------------------------------------------------
+            # Reactive inactivation of in person classes/society meet ups
+            #-------------------------------------------------------------------
+
             # close workplaces with too many infections
             if work_study_group_closure_active==true
                 for worktypeID = 1:n_cohorts
@@ -1317,9 +1327,10 @@ function uni_network_run(RNGseed::Int64,
 
             end
 
-            """
-            Run interventions
-            """
+            #-------------------------------------------------------------------
+            # Run interventions
+            #-------------------------------------------------------------------
+
             # Check if any interventions are triggered
             # Update statuses as needed
             if isassigned(intervention_fns) # Check if any intervetion were specified
@@ -1344,9 +1355,9 @@ function uni_network_run(RNGseed::Int64,
             end
 
 
-            """
-            Perform mass testing (if applicable)
-            """
+            #-------------------------------------------------------------------
+            # Perform mass testing (if applicable)
+            #-------------------------------------------------------------------
             if mass_testing_active == true
                 perform_mass_test!(mass_testing_parameters,
                                                       time,

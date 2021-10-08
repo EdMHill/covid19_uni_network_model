@@ -1,4 +1,4 @@
-"""
+#=
 Purpose:
 Define functions for use with the mass testing module
 
@@ -7,12 +7,13 @@ Supporting functions
 
 Main functions
 - perform_mass_test!
-"""
+=#
+#-------------------------------------------------------------------------------
 
 
-"""
-Supporting functions
-"""
+#-------------------------------------------------------------------------------
+# SUPPORTING FUNCTIONS
+#-------------------------------------------------------------------------------
 # Get the IDs of nodes that would be eligable for mass testing
 function find_eligible_nodes(student_info::Array{student_params,1},
                                  node_IDs_in_location::Array{Int64,1},
@@ -322,9 +323,10 @@ function carry_out_mass_tests_in_location(time::Int64,
    return nothing
 end
 
-"""
-Main functions
-"""
+#-------------------------------------------------------------------------------
+# MAIN FUNCTIONS
+#-------------------------------------------------------------------------------
+
 # Run the primary mass testing function
 function perform_mass_test!(mass_testing_parameters::mass_testing_params,
                                           time::Int64,

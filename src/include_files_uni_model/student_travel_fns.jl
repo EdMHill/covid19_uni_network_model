@@ -1,12 +1,12 @@
-"""
+#=
 Purpose:
 Compute number of infected students travelling from and returning to each region
-"""
+=#
 
 
-"""
+#=
 Compute number of latents, asymptomatics & symptomatics that would be returning to each region
-"""
+=#
 function get_return_students_infected(prev_latent::Int64,
                                        prev_asymp::Int64,
                                        prev_symp::Int64)
@@ -48,9 +48,9 @@ function get_return_students_infected(prev_latent::Int64,
  return return_students_infected_array::Array{Float64,2}
 end
 
-"""
+#=
 Compute number of latents, asymptomatics & symptomatics that could be arriving from each region
-"""
+=#
 function get_arrive_students_infected_recovered(uni_age_latent_by_region::Array{Float64,1},
                                                 uni_age_asymp_by_region::Array{Float64,1},
                                                 uni_age_symp_by_region::Array{Float64,1},

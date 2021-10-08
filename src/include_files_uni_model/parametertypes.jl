@@ -1,4 +1,4 @@
-"""
+#=
 Purpose:
 Parameter types to be used with the network model for universities
 
@@ -17,7 +17,8 @@ Parameter types to be used with the network model for universities
 - intervention_data_feeds: The data streams that may be of use in implementing trigger-based interventions
 - intervention_params: Used to implement the required intervention criteria.
 - mass_testing_params: Fields associated with mass testing intervention
-"""
+=#
+#-------------------------------------------------------------------------------
 
 # Course parameter type to have information on
 # the course being run with face-to-face classes

@@ -37,6 +37,23 @@ Miscellaneous functions contained within this file include:
 =#
 #-------------------------------------------------------------------------------
 
+"""
+    populate_inclass!(inclass::Array{Int64,2},
+                        sameday::Int64,
+                        ton::Int64,
+                        toff::Int64,
+                        rng::MersenneTwister)
+
+Randomly initialises 'inclass' status of nodes (stored in student_states structure) according to configuration options.
+
+Inputs: `inclass` - cmax x endtime array indicating work schedule of each node,
+        `sameday`,
+        `ton`,
+        `toff`,
+        `rng` - random number generator \n
+Outputs: None \n
+Location: additional\\_fns.jl
+"""
 function populate_inclass!(inclass::Array{Int64,2},
                             sameday::Int64,
                             ton::Int64,
@@ -166,6 +183,21 @@ n_students,endtime = size(inclass)
     return nothing
 end
 
+"""
+    reinitialise_society_params!(society_info::Array{society_params,1},
+                                endtime::Int64,
+                                rng::MersenneTwister)
+
+
+Reintialise variables values for each society.
+
+Outline of steps:
+- Initialise the schedule array
+- Assign the schedule array. Based on 3 days randomly scattered throughout week.
+- Reinitialise variables as required
+
+Location: additional\\_fns.jl
+"""
 function reinitialise_society_params!(society_info::Array{society_params,1},
                                     endtime::Int64,
                                     rng::MersenneTwister)
@@ -218,6 +250,22 @@ Outline of steps, iterating over each society:
     return nothing
 end
 
+
+"""
+    increment_counters!(student_info::Array{student_params,1},
+                        CT_vars::contact_tracing_vars,
+                        states::student_states,
+                        household_isoltime::Int64,
+                        symp_isoltime::Int64,
+                        asymp_isoltime::Int64,
+                        contact_tracing_active::Bool;
+                        timeisol_CTcause::Array{Int64,1}=zeros(Int64,1),
+                        CT_caused_isol_limit::Int64=0)
+
+Increase value of time in infection state variables, called each timestep.
+
+Location: additional\\_fns.jl
+"""
 function increment_counters!(student_info::Array{student_params,1},
                             CT_vars::contact_tracing_vars,
                             states::student_states,
@@ -308,7 +356,23 @@ function increment_counters!(student_info::Array{student_params,1},
     return nothing
 end
 
+"""
+    load_configs(runset::String,
+                n_replicates::Int64,
+                n_cohorts::Int64,
+                n_students::Int64)
 
+Increase value of time in infection state variables, called each timestep.
+
+Input:
+- `runset::String`: Name of the requested configuration
+- `n_replicates::Int64`: Number of replicates to be performed
+- `n_cohorts::Int64`: Number of study group cohorts in the configuration
+- `n_students::Int64`: Number of students in the population
+
+Output: Configuration variables \n
+Location: additional\\_fns.jl
+"""
 function load_configs(runset::String,
                         n_replicates::Int64,
                         n_cohorts::Int64,
@@ -959,6 +1023,26 @@ end
     mass_testing_config::Array{mass_testing_params,1}
 end
 
+"""
+    find_network_parameters(n_cohorts::Int64;
+                            attendence_propns::Array{Float64,2}=Array{Float64,2}[],
+                            n_students::Int64 = 0,
+                            n_students_on_campus::Int64 = 0)
+
+Load default network parameters according to number of class cohorts and nodes required.
+
+Inputs:
+- `n_cohorts::Int64`: Number of study cohorts
+- `attendence_propns::Array{Float64,2}=Array{Float64,2}[]`: Proportion of each cohort that attends class
+- `n_students::Int64 = 0`: Total number of students in the population
+- `n_students_on_campus::Int64 = 0`: Number of students resident oncampus
+
+Outputs:
+- `network_parameters`: network_params structure,
+- `class_generation_parameters`: Parameter structure to generate classes and cohorts
+
+Location: additional\\_fns.jl
+"""
 function find_network_parameters(n_cohorts::Int64;
                                     attendence_propns::Array{Float64,2}=Array{Float64,2}[],
                                     n_students::Int64 = 0,
@@ -1067,7 +1151,47 @@ end
 #-----------------------------------------------------------------------
 # TRANSMISSION RELATED FUNCTIONS
 #-----------------------------------------------------------------------
+"""
+    transmit_over!(student_info::Array{student_params,1},
+                    transmission_risk::Float64,
+                    infected_by::Array{Int64,1},
+                    output::sim_outputs,
+                    states::student_states,
+                    probasymp::Float64,
+                    rng::MersenneTwister,
+                    time::Int64,
+                    count::Int64;
+                    infecting_by::Int64=0,
+                    contacts_to_check::Array{Int64,1}=Array{Int64,1}(),
+                    dynamic_contact::Int64=0,
+                    inisol::Array{Int64,2} = Array{Int64,2}(undef,0,0),
+                    attendance_record::Array{Int64,2} = Array{Int64,2}(undef,0,0),
+                    cohort_ID::Int64 = 0,
+                    household_check_flag::Bool = false)
 
+For a single node and specified contacts, check transmission potential and randomly transmit infection.
+
+Inputs:
+- `student_info`: Fields with individual level information
+- `transmission_risk`: Relevant transmission probability for current node and context
+- `infected_by`: Record of ID of infectors of each node
+- `output::sim_outputs`: Record of outputs from the simulations
+- `states::student_states`: Status of each node
+- `probasymp`: Probability that new infections will be asymptomatic
+- `rng`: Random number generator
+- `time`: Current time in simulation
+- `count`: Number of current replicate
+- `infecting_by`: ID of node that is infecting others
+- `contacts_to_check`: Array of node IDs that may be infected
+- `dynamic_contact`: (optional) flag if contact is dynamic or not
+- `inisol`: (optional) flag if nodes are in isolation
+- `attendance_record`: (optional) flag if nodes are at work (according to work schedule)
+- `cohort_ID`: (optional) Identifier for cohort the student is in
+- `household_check_flag::Bool = false`: (optional) If true, then checking transmission with household contacts. Otherwise, has value false
+
+Outputs: None \n
+Location: additional\\_fns.jl
+"""
 function transmit_over!(student_info::Array{student_params,1},
                     transmission_risk::Float64,
                     infected_by::Array{Int64,1},
@@ -1084,23 +1208,6 @@ function transmit_over!(student_info::Array{student_params,1},
                     attendance_record::Array{Int64,2} = Array{Int64,2}(undef,0,0),
                     cohort_ID::Int64 = 0,
                     household_check_flag::Bool = false)
-    # Inputs:
-    # student_info - Fields with individual level information
-    # transmission_risk::Float64 - Probability of transmission given contact made
-    # infected_by::Array{Int64,1} - Record of ID of infectors of each node
-    # output::sim_outputs - record of outputs from the simulations
-    # states::student_states - status of each node
-    # probasymp::Float64 - Asymptomatic probability
-    # rng::MersenneTwister - The random number generator
-    # time::Int64 - Current timestep
-    # count::Int64 - Replicate ID
-    # infecting_by::Int64 - Node ID of node transmitting infection
-    # contacts_to_check::Int64 - list of nodes IDs to receive infection
-    # dynamic_contact::Int64 - Flag for if this infection is over a dynamic contact link
-    # inisol::Array{Int64,2} - Flag if nodes are in isolation
-    # attendance_record::Array{Int64,2} - Flag if nodes are at work
-    # cohort_ID::Int64 - If dealing with a study based transmission event, the relevant cohort identifier
-    # household_check_flag::Bool - If true, then checking transmission with household contacts. Otherwise, has value false.
 
     for contact_itr = 1:length(contacts_to_check) # Iterate over each contact
         infecting_to = contacts_to_check[contact_itr]
@@ -1167,6 +1274,47 @@ function transmit_over!(student_info::Array{student_params,1},
     end
 end
 
+"""
+    transmit_over_societies!(student_info::Array{student_params,1},
+                            society_info::Array{society_params,1},
+                            infection_parameters::infection_params,
+                            infectiousness::Float64,
+                            asymp_trans_scaling::Float64,
+                            infected_by::Array{Int64,1},
+                            output::sim_outputs,
+                            states::student_states,
+                            probasymp::Float64,
+                            rng::MersenneTwister,
+                            time::Int64,
+                            count::Int64;
+                            infecting_by::Int64=0,
+                            society_contacts::Array{Array{Int64,1},2} = Array{Array{Int64,1},2}(undef,0,0),
+                            inisol::Array{Int64,2} = Array{Int64,2}(undef,0,0),
+                            society_attendance_record::Array{Int64,3} = Array{Int64,3}(undef,0,0,0))
+
+For a single node and specified contacts in society setting, check transmission potential and randomly transmit infection.
+
+Inputs:
+- `student_info`: Fields with individual level information
+- `society_info::society_params`: Parameter structure, entry for each society
+- `infection_parameters::infection_params`: Structure with fields relating to transmission related variables
+- `infectiousness::Float64`: Relative infectivity on given day of infection
+- `asymp_trans_scaling::Float64`: The relative infectiousness of an asymptomatic (sampled earlier in main_function.jl for the simn replicate)
+- `infected_by`: Record of ID of infectors of each node
+- `output::sim_outputs`: Record of outputs from the simulations
+- `states::student_states`: Status of each node
+- `probasymp`: Probability that new infections will be asymptomatic
+- `rng`: Random number generator
+- `time`: Current time in simulation
+- `count`: Number of current replicate
+- `infecting_by`: ID of node that is infecting others
+- `society_contacts::Int64`: List of nodes IDs contacted within societies
+- `inisol`: (optional) flag if nodes are in isolation
+- `society_attendance_record`: (optional) flag if partcipate in society events
+
+Outputs: None \n
+Location: additional\\_fns.jl
+"""
 function transmit_over_societies!(student_info::Array{student_params,1},
                                     society_info::Array{society_params,1},
                                     infection_parameters::infection_params,
@@ -1183,23 +1331,6 @@ function transmit_over_societies!(student_info::Array{student_params,1},
                                     society_contacts::Array{Array{Int64,1},2} = Array{Array{Int64,1},2}(undef,0,0),
                                     inisol::Array{Int64,2} = Array{Int64,2}(undef,0,0),
                                     society_attendance_record::Array{Int64,3} = Array{Int64,3}(undef,0,0,0))
-    # Inputs:
-    # student_info - Fields with individual level information
-    # society_info::society_params - Parameter structure, entry for each society.
-    # infection_parameters::infection_params - Structure with fields relating to transmission related variables
-    # infectiousness::Float64 - relative infectivity on given day of infection
-    # asymp_trans_scaling::Float64 - The relative infectiousness of an asymptomatic (sampled earlier in main_function.jl for the simn replicate)
-    # infected_by::Array{Int64,1} - Record of ID of infectors of each node
-    # output::sim_outputs - record of outputs from the simulations
-    # states::student_states - status of each node
-    # probasymp::Float64 - Asymptomatic probability
-    # rng::MersenneTwister - The random number generator
-    # time::Int64 - Current timestep
-    # count::Int64 - Replicate ID
-    # infecting_by::Int64 - Node ID of node transmitting infection
-    # society_contacts::Int64 - list of nodes IDs contacted within societies
-    # inisol::Array{Int64,2} - Flag if nodes are in isolation
-    # society_attendance_record::Array{Int64,2} - Flag if nodes partcipate in society events
 
     @unpack suscep_scaling = infection_parameters
 
@@ -1287,19 +1418,31 @@ end
 #-----------------------------------------------------------------------
 # FUNCTIONS TO SET UP TRANSMISSION RATES WITHIN HOUSEHOLD FOR EACH INDIVIDUAL
 #-----------------------------------------------------------------------
+"""
+    assign_household_transmit_onegroup!(RNGseed::Int64,
+                                        network_parameters::network_params,
+                                        household_contacts_per_node::Array{Int64,1},
+                                        transrisk_household_group_mean::Array{Float64,1},
+                                        transrisk_household_group_sd::Array{Float64,1})
 
-# Single household risk type
+Allocate transmission risk within household setting for each node, based on single specified normal distribution.
+Transmission risks are stored in 'student\\_info' objects, within network\\_params structure.
+
+Inputs:
+- `RNGseed::Int64`: Random number generator seed
+- `network_parameters::network_params`: Quantities to construct the contacts & stores the node properties
+- `household_contacts_per_node::Array{Int64,1}`: Number of household contacts per node
+- `transrisk_household_group_mean::Array{Float64,1}`: Mean probability of transmission within household (length must be 1)
+- `transrisk_household_group_sd::Array{Float64,1}`: Standard deviation of probability of transmission within household (length must be 1)
+
+Outputs: None \n
+Location: additional\\_fns.jl
+"""
 function assign_household_transmit_onegroup!(RNGseed::Int64,
                                     network_parameters::network_params,
                                     household_contacts_per_node::Array{Int64,1},
                                     transrisk_household_group_mean::Array{Float64,1},
                                     transrisk_household_group_sd::Array{Float64,1})
-# Inputs:
-# RNGseed::Int64 - Set the number to seed the random number generator
-# network_parameters::network_params - Quantities to construct the contacts & stores the node properties
-# household_contacts_per_node::Array{Int64,1} - As described
-# transrisk_household_group_mean/sd::Array{Float64,1} -  probability of transmission within a household, can differ per household group
-
     # Unpack parameters
     @unpack n_students, student_info = network_parameters
 
@@ -1333,17 +1476,33 @@ function assign_household_transmit_onegroup!(RNGseed::Int64,
     return nothing
 end
 
-# Household risk based on household size
+"""
+    assign_household_transmit_household_size!(RNGseed::Int64,
+                                                network_parameters::network_params,
+                                                household_contacts_per_node::Array{Int64,1},
+                                                transrisk_household_group_mean::Array{Float64,1},
+                                                transrisk_household_group_sd::Array{Float64,1})
+
+Allocate transmission risk within household setting for each node, based on specified normal distributions for different household sizes.
+
+Must specify 4 sets of mean/SD, for households of size 2, 3, 4 and 5+. Households of size 1 have no transmission risk.
+Transmission risks are stored in 'student\\_info' objects, within network\\_params structure.
+
+Inputs:
+- `RNGseed::Int64`: Random number generator seed
+- `network_parameters::network_params`: Quantities to construct the contacts & stores the node properties
+- `household_contacts_per_node::Array{Int64,1}`: Number of household contacts per node
+- `transrisk_household_group_mean::Array{Float64,1}`: Mean probability of transmission within household (length must be 1)
+- `transrisk_household_group_sd::Array{Float64,1}`: Standard deviation of probability of transmission within household (length must be 1)
+
+Outputs: None \n
+Location: additional\\_fns.jl
+"""
 function assign_household_transmit_household_size!(RNGseed::Int64,
                                     network_parameters::network_params,
                                     household_contacts_per_node::Array{Int64,1},
                                     transrisk_household_group_mean::Array{Float64,1},
                                     transrisk_household_group_sd::Array{Float64,1})
-# Inputs:
-# RNGseed::Int64 - Set the number to seed the random number generator
-# network_parameters::network_params - Quantities to construct the contacts & stores the node properties
-# household_contacts_per_node::Array{Int64,1} - As described
-# transrisk_household_group_mean/sd::Array{Float64,1} -  probability of transmission within a household, can differ per household group
 
     # Unpack parameters
     @unpack n_students, student_info = network_parameters
@@ -1394,19 +1553,30 @@ function assign_household_transmit_household_size!(RNGseed::Int64,
     return nothing
 end
 
-# For on-campus accommodation, assign household risk based on halls
-# For off-campus accommodation, assign the "medium" risk
+"""
+    assign_household_transmit_halls_risk!(RNGseed::Int64,
+                                            network_parameters::network_params,
+                                            household_contacts_per_node::Array{Int64,1},
+                                            transrisk_household_group_mean::Array{Float64,1},
+                                            transrisk_household_group_sd::Array{Float64,1})
+
+For on-campus accommodation, assign household risk based on halls. For off-campus accommodation, assign the "medium" risk
+
+Inputs:
+- `RNGseed::Int64`: Random number generator seed
+- `network_parameters::network_params`: Quantities to construct the contacts & stores the node properties
+- `household_contacts_per_node::Array{Int64,1}`: Number of household contacts per node
+- `transrisk_household_group_mean::Array{Float64,1}`: Mean probability of transmission within household (length must be 1)
+- `transrisk_household_group_sd::Array{Float64,1}`: Standard deviation of probability of transmission within household (length must be 1)
+
+Outputs: None \n
+Location: additional\\_fns.jl
+"""
 function assign_household_transmit_halls_risk!(RNGseed::Int64,
                                     network_parameters::network_params,
                                     household_contacts_per_node::Array{Int64,1},
                                     transrisk_household_group_mean::Array{Float64,1},
                                     transrisk_household_group_sd::Array{Float64,1})
-# Inputs:
-# RNGseed::Int64 - Set the number to seed the random number generator
-# network_parameters::network_params - Quantities to construct the contacts & stores the node properties
-# household_contacts_per_node::Array{Int64,1} - As described
-# transrisk_household_group_mean/sd::Array{Float64,1} -  probability of transmission within a household, can differ per household group
-
     # Unpack parameters
     @unpack n_students, student_info = network_parameters
 
@@ -1462,54 +1632,54 @@ function assign_household_transmit_halls_risk!(RNGseed::Int64,
     return nothing
 end
 
-function assign_household_transmit_multigrouptest!(RNGseed::Int64,
-                                    network_parameters::network_params,
-                                    household_contacts_per_node::Array{Int64,1},
-                                    transrisk_household_group_mean::Array{Float64,1},
-                                    transrisk_household_group_sd::Array{Float64,1})
-# Inputs:
-# RNGseed::Int64 - Set the number to seed the random number generator
-# network_parameters::network_params - Quantities to construct the contacts & stores the node properties
-# household_contacts_per_node::Array{Int64,1} - As described
-# transrisk_household_group_mean/sd::Array{Float64,1} -  probability of transmission within a household, can differ per household group
-
-    # Unpack parameters
-    @unpack n_students, student_info = network_parameters
-
-    # Set the random number generator
-    rng = MersenneTwister(RNGseed)
-
-    # Get number of household groups in use
-    n_transrisk_household_group_mean = length(transrisk_household_group_mean)
-    n_transrisk_household_group_sd = length(transrisk_household_group_sd)
-
-    # Throw error if more than one group
-    if (n_transrisk_household_group_mean < 1)
-        error("Should be multiple household group SAR mean estimate, but have found there to be $(n_transrisk_household_group_mean). Please rectify.")
-    end
-
-    # Throw error if more than one group
-    if (n_transrisk_household_group_sd < 1)
-        error("Should be multiple household group SAR standard deviation, but have found there to be $(n_transrisk_household_group_sd). Please rectify.")
-    end
-
-
-    # Construct normal distribution to sample from
-    norm_dists = Normal.(transrisk_household_group_mean,transrisk_household_group_sd)
-
-    # Iterate over each individual
-    for node_itr = 1:n_students
-        if household_contacts_per_node[node_itr] == 0
-            student_info[node_itr].transrisk_household = rand(rng,norm_dists[1])
-        elseif household_contacts_per_node[node_itr] == 1
-            student_info[node_itr].transrisk_household = rand(rng,norm_dists[2])
-        else
-            student_info[node_itr].transrisk_household = rand(rng,norm_dists[3])
-        end
-    end
-
-    return nothing
-end
+# function assign_household_transmit_multigrouptest!(RNGseed::Int64,
+#                                     network_parameters::network_params,
+#                                     household_contacts_per_node::Array{Int64,1},
+#                                     transrisk_household_group_mean::Array{Float64,1},
+#                                     transrisk_household_group_sd::Array{Float64,1})
+# # Inputs:
+# # RNGseed::Int64 - Set the number to seed the random number generator
+# # network_parameters::network_params - Quantities to construct the contacts & stores the node properties
+# # household_contacts_per_node::Array{Int64,1} - As described
+# # transrisk_household_group_mean/sd::Array{Float64,1} -  probability of transmission within a household, can differ per household group
+#
+#     # Unpack parameters
+#     @unpack n_students, student_info = network_parameters
+#
+#     # Set the random number generator
+#     rng = MersenneTwister(RNGseed)
+#
+#     # Get number of household groups in use
+#     n_transrisk_household_group_mean = length(transrisk_household_group_mean)
+#     n_transrisk_household_group_sd = length(transrisk_household_group_sd)
+#
+#     # Throw error if more than one group
+#     if (n_transrisk_household_group_mean < 1)
+#         error("Should be multiple household group SAR mean estimate, but have found there to be $(n_transrisk_household_group_mean). Please rectify.")
+#     end
+#
+#     # Throw error if more than one group
+#     if (n_transrisk_household_group_sd < 1)
+#         error("Should be multiple household group SAR standard deviation, but have found there to be $(n_transrisk_household_group_sd). Please rectify.")
+#     end
+#
+#
+#     # Construct normal distribution to sample from
+#     norm_dists = Normal.(transrisk_household_group_mean,transrisk_household_group_sd)
+#
+#     # Iterate over each individual
+#     for node_itr = 1:n_students
+#         if household_contacts_per_node[node_itr] == 0
+#             student_info[node_itr].transrisk_household = rand(rng,norm_dists[1])
+#         elseif household_contacts_per_node[node_itr] == 1
+#             student_info[node_itr].transrisk_household = rand(rng,norm_dists[2])
+#         else
+#             student_info[node_itr].transrisk_household = rand(rng,norm_dists[3])
+#         end
+#     end
+#
+#     return nothing
+# end
 
 
 
@@ -1517,18 +1687,30 @@ end
 # FUNCTIONS TO SET UP TRANSMISSION RATES WITHIN COHORTS AND SOCIETIES FOR EACH INDIVIDUAL
 #-----------------------------------------------------------------------
 
-# Cohort transmission risk
+"""
+    assign_cohort_transmit!(RNGseed::Int64,
+                            network_parameters::network_params,
+                            class_generation_parameters::class_generation_params,
+                            transrisk_cohort_mean::Array{Float64,1},
+                            transrisk_cohort_sd::Array{Float64,1})
+
+Allocate transmission risk within cohort/study setting for each node, based on specified normal distributions for different cohorts.
+
+Inputs:
+- `RNGseed::Int64`: Random number generator seed
+- `network_parameters::network_params` - Quantities to construct the contacts & stores the node properties
+- `class_generation_parameters::class_generation_params`: As described
+- `transrisk_cohort_mean::Array{Float64,1}`: Mean probability of transmission within cohort
+- `transrisk_cohort_sd::Array{Float64,1}`: Standard deviation of probability of transmission within cohort
+
+Outputs: None \n
+Location: additional\\_fns.jl
+"""
 function assign_cohort_transmit!(RNGseed::Int64,
                                     network_parameters::network_params,
                                     class_generation_parameters::class_generation_params,
                                     transrisk_cohort_mean::Array{Float64,1},
                                     transrisk_cohort_sd::Array{Float64,1})
-# Inputs:
-# RNGseed::Int64 - Set the number to seed the random number generator
-# network_parameters::network_params - Quantities to construct the contacts & stores the node properties
-# class_generation_parameters::class_generation_params - As described
-# transrisk_cohort_mean/sd::Array{Float64,1} -  probability of transmission with a cohort contact. Can differ by cohort.
-
     # Unpack parameters
     @unpack n_students, student_info = network_parameters
     @unpack n_cohorts = class_generation_parameters
@@ -1558,6 +1740,23 @@ function assign_cohort_transmit!(RNGseed::Int64,
 end
 
 
+"""
+    assign_society_sports_transmit!(RNGseed::Int64,
+                                    network_parameters::network_params,
+                                    society_sports_transrisk_mean::Array{Float64,1},
+                                    society_sports_transrisk_sd::Array{Float64,1})
+
+Allocate transmission risk within societies/sports groups setting for each node, based on specified normal distributions for different societies/sports.
+
+Inputs:
+- `RNGseed::Int64`: Random number generator seed
+- `network_parameters::network_params` - Quantities to construct the contacts & stores the node properties
+- `society_sports_transrisk_mean::Array{Float64,1}`: Mean probability of transmission within setting
+- `society_sports_transrisk_sd::Array{Float64,1}`: Standard deviation of probability of transmission within setting
+
+Outputs: None \n
+Location: additional\\_fns.jl
+"""
 # Society & sports group transmission risk
 function assign_society_sports_transmit!(RNGseed::Int64,
                                     network_parameters::network_params,
@@ -1588,16 +1787,27 @@ function assign_society_sports_transmit!(RNGseed::Int64,
     return nothing
 end
 
+"""
+    assign_dynamic_social_transmit!(RNGseed::Int64,
+                                    network_parameters::network_params,
+                                    transrisk_dynamic_social_mean::Float64,
+                                    transrisk_dynamic_social_sd::Float64)
+
+Allocate transmission risk for dynamic social contacts.
+
+Inputs:
+- `RNGseed::Int64`: Random number generator seed
+- `network_parameters::network_params` - Quantities to construct the contacts & stores the node properties
+- `transrisk_dynamic_social_mean::Float64`: Mean probability of transmission within setting
+- `transrisk_dynamic_social_sd::Float64`: Standard deviation of probability of transmission within setting
+
+Outputs: None \n
+Location: additional\\_fns.jl
+"""
 function assign_dynamic_social_transmit!(RNGseed::Int64,
                                     network_parameters::network_params,
                                     transrisk_dynamic_social_mean::Float64,
                                     transrisk_dynamic_social_sd::Float64)
-# Inputs:
-# RNGseed::Int64 - Set the number to seed the random number generator
-# network_parameters::network_params - Quantities to construct the contacts & stores the node properties
-# class_generation_parameters::class_generation_params - As described
-# transrisk_dynamic_social_mean/sd::Array{Float64,1} -  transmission risk across a dynamic social contact.
-
     # Unpack parameters
     @unpack n_students, student_info = network_parameters
 
@@ -1634,6 +1844,13 @@ end
 # FUNCTIONS TO REINITIALISE STATES AT START OF EACH RUN
 #-----------------------------------------------------------------------
 
+"""
+    reinitialise_node_states!(states::student_states)
+
+Initialises objects in student\\_states structure ready for replicate.
+
+Location: additional\\_fns.jl
+"""
 # Node states, household inf delay & CT vars
 function reinitialise_node_states!(states::student_states)
     lmul!(0,states.timelat)
@@ -1650,18 +1867,29 @@ function reinitialise_node_states!(states::student_states)
     lmul!(0,states.acquired_infection)
 end
 
-# Reinitialise daily record arrays
+"""
+    reinitialise_daily_record_arrays!(contacts::contacts_struct)
+
+Initialises objects in contacts\\_struct structure ready for replicate.
+
+Location: additional\\_fns.jl
+"""
 function reinitialise_daily_record_arrays!(contacts::contacts_struct)
     lmul!(0,contacts.daily_record_inclass)
     lmul!(0,contacts.daily_record_inisol)
     lmul!(0,contacts.daily_record_atsociety)
 end
 
+"""
+    reinitialise_student_params!(n_students::Int64,
+                                 student_info::Array{student_params,1})
+
+Initialises objects in student\\_params structure ready for replicate.
+
+Location: additional\\_fns.jl
+"""
 function reinitialise_student_params!(n_students::Int64,
                                             student_info::Array{student_params,1})
-# Inputs:
-# n_students - Number of students in the system
-# nodes - Parameter type to have information on each indivdiual
 
     # Iterate over each individual and set delays to default values
     for student_itr = 1:n_students
@@ -1672,11 +1900,16 @@ function reinitialise_student_params!(n_students::Int64,
         student_info[student_itr].household_info.lockdown_status = false
     end
 
-
-
     return nothing
 end
 
+"""
+    reinitialise_class_params!(class_info::Array{Array{class_params,1},1})
+
+Initialises objects in class\\_params structure ready for replicate.
+
+Location: additional\\_fns.jl
+"""
 function reinitialise_class_params!(class_info::Array{Array{class_params,1},1})
 
     # Get number of team types in use
@@ -1696,6 +1929,15 @@ function reinitialise_class_params!(class_info::Array{Array{class_params,1},1})
     return nothing
 end
 
+"""
+    reinitialise_CT_vars!(CT_vars::contact_tracing_vars,n_students::Int64, rng::MersenneTwister,
+                            CT_parameters::CT_params, delay_adherence::Array{Int64,1},
+                            csum_test_result_delay::Array{Float64,1},max_test_result_delay::Int64)
+
+Initialises objects associated with contact tracing for replicate.
+
+Location: additional\\_fns.jl
+"""
 function reinitialise_CT_vars!(CT_vars::contact_tracing_vars,n_students::Int64, rng::MersenneTwister,
     CT_parameters::CT_params, delay_adherence::Array{Int64,1},
     csum_test_result_delay::Array{Float64,1},max_test_result_delay::Int64)
@@ -1754,15 +1996,27 @@ end
 #-----------------------------------------------------------------------
 # MISC. FUNCTIONS
 #-----------------------------------------------------------------------
+"""
+    draw_sample_from_pmf(csum_pmf::Array{Float64,1},
+                         rng::MersenneTwister;
+                         idx_offset::Int64 = 0)
 
+Randomly draw sample from specified discrete probability distribution.
+Used to randomly set infection, adherence and testing waiting times.
+
+Inputs:
+- `csum_pmf::Array{Float64,1}`: Specified discrete CDF to sample from
+- `rng::MersenneTwister`: Random number generator
+- `idx_offset::Int64=0`: Links bin index to desired quantity value
+
+Outputs:
+- `val_to_update::Int64`: Sampled quantity value
+
+Location: additional\\_fns.jl
+"""
 function draw_sample_from_pmf(csum_pmf::Array{Float64,1},
                                 rng::MersenneTwister;
                                 idx_offset::Int64 = 0)
-# Inputs:
-# val_to_update::Int64 - Entry sampled value will be assigned to
-# csum_pmf::Array{Float64,1} - Cumulative summed probability mass function. Used to draw value from.
-# rng::MersenneTwister - The random number generator
-# idx_offset::Int64 = 0 - Links bin index to the quantity value
 
     # Get number of elements in the pmf
     n_bins = length(csum_pmf)
@@ -1798,6 +2052,16 @@ function draw_sample_from_pmf(csum_pmf::Array{Float64,1},
     return val_to_update::Int64
 end
 
+"""
+    set_infection_related_times!(time_to_symps::Array{Int64,1},states::student_states,
+    isolation::Int64,adherence::Float64,csum_delay_adherence::Array{Float64,1},
+    d_incub::Distribution,n_students::Int64,rng::MersenneTwister)
+
+Randomly initialise infection related values for each node
+(time to symptoms, length of latent period, delay to adherence, adhere yes/no)
+
+Location: additional\\_fns.jl
+"""
 function set_infection_related_times!(time_to_symps::Array{Int64,1},states::student_states,
     isolation::Int64,adherence::Float64,csum_delay_adherence::Array{Float64,1},
     d_incub::Distribution,n_students::Int64,rng::MersenneTwister)
@@ -1837,7 +2101,13 @@ function set_infection_related_times!(time_to_symps::Array{Int64,1},states::stud
 end
 
 
-# Collapse nested structures into a single vector
+"""
+    flattenall(a::AbstractArray)
+
+Collapse nested structures into a single vector.
+
+Location: additional\\_fns.jl
+"""
 function flattenall(a::AbstractArray)
     while any(x->typeof(x)<:AbstractArray, a)
         a = collect(Iterators.flatten(a))

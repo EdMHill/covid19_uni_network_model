@@ -20,15 +20,25 @@ Parameter types to be used with the network model for universities
 =#
 #-------------------------------------------------------------------------------
 
-# Course parameter type to have information on
-# the course being run with face-to-face classes
+"""
+    Structure: class_params
+
+Course parameter type to have information on the course being run with face-to-face classes.
+
+Location: parametertypes.jl
+"""
 @with_kw mutable struct class_params
    f2f_activity::Bool = true      # For putting in place online learning for the course, can set flag to false
    class_inactivation_time::Int64 = 0  # Time class has not been permitted to have f2f teaching
 end
 
-# Society parameter type to have information on
-# the society being active
+"""
+    Structure: society_params
+
+Society parameter type to have information on the society being active.
+
+Location: parametertypes.jl
+"""
 @with_kw mutable struct society_params
    f2f_activity::Bool = true
    schedule::Array{Int64,1} = Array{Int64,1}(undef,0)
@@ -38,10 +48,15 @@ end
    member_list::Array{Int64,1} = Array{Int64,1}(undef,0)
 end
 
-# Household parameter type to have information on the household the student is in
-# Whether on-campus of off-campus, location
-# Particularly relevant to on-campus accommodation:
-# Halls >  Blocks > Floors > Households
+"""
+    Structure: household_params
+
+Household parameter type to have information on the household the student is in:
+- Whether on-campus of off-campus, location
+- Particularly relevant to on-campus accommodation: Halls >  Blocks > Floors > Households
+
+Location: parametertypes.jl
+"""
 @with_kw mutable struct household_params
    household_ID::Int64 = 0        # Household the individual has been assigned to. ID for the global system
    on_campus_accom::Bool = true   # Whether accommodation is on campus (true) or off campus (false)
@@ -54,8 +69,13 @@ end
    ensuite_flag::Bool = false    # Whether the accommodation is ensuite bathroom (true) or communal bathroom (false)
 end
 
-# Track individual student details.
-# Can add other fields as required
+"""
+    Structure: student_params
+
+Track individual student details.
+
+Location: parametertypes.jl
+"""
 @with_kw mutable struct student_params
    would_attend_f2f_classes::Int64        # Flag variable. If 1, individual would attend f2f if they are active. If 0, they will not.
    cohort_ID::Int64                       # Specify subjects and year groups. Also classifies staff members.
@@ -72,6 +92,13 @@ end
    no_contacts_status::Bool = false       # Defines if student is in rehoused/full quarantine state
 end
 
+"""
+    Structure: CT_params
+
+Parameter structure relating to contact tracing.
+
+Location: parametertypes.jl
+"""
 @with_kw mutable struct CT_params
 # used for parameters relating to contact tracing
 
@@ -117,8 +144,14 @@ end
    time_WC::Int64 = 14 # how many days to close workplaces for
 end
 
+"""
+    Structure: contacts_struct
+
+Used for contact structures, that are also used outside of contact tracing.
+
+Location: parametertypes.jl
+"""
 @with_kw mutable struct contacts_struct
-# used for contact structures, that are also used outside of contact tracing
 
    # sizes to initialise arrays
    n_students::Int64 = 0
@@ -171,6 +204,13 @@ end
    floor_member_list::Array{Array{Array{Array{Int64,1},1},1},1} = Array{Array{Array{Array{Int64,1},1},1},1}(undef,0)
 end
 
+"""
+    Structure: contact_tracing_vars
+
+Parameter structure for contact tracing variables.
+
+Location: parametertypes.jl
+"""
 @with_kw mutable struct contact_tracing_vars
 # only needed for contact tracing
 
@@ -209,10 +249,14 @@ end
    CT_delay_until_test_result::Array{Int64,1} = zeros(Int64,n_students)
 end
 
-@with_kw struct infection_params
-# used for parameters relating to the infection process
-# NOTE THAT MANY OF THESE ARE RESET IN THE CONFIGURATION
+"""
+    Structure: infection_params
 
+Parameter structure with variables relating to the infection process, wih many of these fields reset in the configuration.
+
+Location: parametertypes.jl
+"""
+@with_kw struct infection_params
    #Specify number of cohorts in use
    n_cohorts = 84
 
@@ -293,8 +337,14 @@ end
    recov_propn = 0.1
 end
 
+"""
+    Structure: network_params
+
+Parameter structure with variables related to the network generation.
+
+Location: parametertypes.jl
+"""
 @with_kw mutable struct network_params
-# used for parameters relating to the network generation
 
    # Number of students in the system
    n_students::Int64 = 0
@@ -384,8 +434,14 @@ end
    # CS_active_flag::Bool = false
 end
 
+"""
+    Structure: class_generation_params
+
+Parameter structure with variables related to student class generation.
+
+Location: parametertypes.jl
+"""
 @with_kw struct class_generation_params
-# used for parameters relating to student class generation
 
 # Total Number of Students 27,278
 # Undergraduate	15,998
@@ -414,15 +470,27 @@ end
    class_size_sd::Array{Float64,2} = [0. 0. 1.]
 end
 
+"""
+    Structure: society_generation_params
+
+Parameter structure with variables related to generation of societies.
+
+Location: parametertypes.jl
+"""
 @with_kw struct society_generation_params
-# used for parameters relating to society generation
    society_types::Int64 = 2
    society_type_proportion::Array{Float64,1} = [0.5, 0.5]
    societies_joined_per_person_dist::Array{Float64,1} = [0.5,0.4,0.025,0.025,0.025,0.025]
 end
 
+"""
+    Structure: sim_outputs
+
+Parameter structure for outputs saved from the simulations.
+
+Location: parametertypes.jl
+"""
 @with_kw mutable struct sim_outputs
-# used for outputs to be saved from the simulations
    endtime::Int64 = 0
    countfinal::Int64 = 0
    n_students::Int64 = 0
@@ -503,6 +571,13 @@ end
    mean_init_generation_time::Array{Float64,1} = zeros(Float64,countfinal) # mean initial generation time
 end
 
+"""
+    Structure: student_states
+
+Parameter structure with variables tracking status of each student.
+
+Location: parametertypes.jl
+"""
 @with_kw mutable struct student_states
 # used for the status of each node
    n_students::Int64 = 0
@@ -524,6 +599,13 @@ end
    acquired_infection::Array{Int64,1} = zeros(Int64,n_students) # time node acquired infection
 end
 
+"""
+    Structure: intervention_data_feeds
+
+Parameter structure with data inputs used for interventions.
+
+Location: parametertypes.jl
+"""
 @with_kw mutable struct intervention_data_feeds
    rep_inf_this_timestep::Array{Int64,1} = Array{Float64,1}[] #Indicator of whether a node reports symptomatic infection during current timestep
    output::sim_outputs = sim_outputs()
@@ -533,6 +615,13 @@ end
    replicate_id::Int64 = 0
 end
 
+"""
+    Structure: intervention_params
+
+Parameter structure to store intervention attributes.
+
+Location: parametertypes.jl
+"""
 @with_kw mutable struct intervention_params
    time_horizon::Int64 = 0 # In determining whether to invoke an intervention, length of time to look back over to make decision
    inactivation_length::Int64 = 0 # Time for an activity to be inactive before checking if it can start again
@@ -543,6 +632,13 @@ end
    release_condition_propn_cases::Float64 = 0. # For removing measures, condition related to propn of group that must be satisfied
 end
 
+"""
+    Structure: mass_testing_params
+
+Parameter structure to store mass testing intervention attributes.
+
+Location: parametertypes.jl
+"""
 @with_kw mutable struct mass_testing_params
    designated_test_times::Array{Int64,1} = [0] # Timesteps on which mass testing will take place. Entry per mass testing event.
    on_campus_coverage_propn::Array{Float64,1} = [1.] # On campus residents, coverage.

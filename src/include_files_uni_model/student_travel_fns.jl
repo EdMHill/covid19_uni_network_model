@@ -3,18 +3,22 @@ Purpose:
 Compute number of infected students travelling from and returning to each region
 =#
 
+"""
+    get_return_students_infected(prev_latent::Int64,prev_asymp::Int64,prev_symp::Int64)
 
-#=
 Compute number of latents, asymptomatics & symptomatics that would be returning to each region
-=#
+
+Inputs:
+ - `prev_latent`, `prev_asymp`, `prev_symp`: Number of the student population in each infected state
+
+Outputs:
+ - `return_students_infected_array`: Row by region, columns: latent,asymp,symp
+
+Location: student\\_travel\\_fns.jl
+"""
 function get_return_students_infected(prev_latent::Int64,
                                        prev_asymp::Int64,
                                        prev_symp::Int64)
-#Inputs:
-# prev_latent, prev_asymp, prev_symp - Number of the student population in each infected state
-
-#Outputs:
-# return_students_infected_array::Array{Float64,2} - row by region, columns: latent,asymp,symp
 
  # Get student popn split by region domicile data
    # 1: North West
@@ -48,21 +52,29 @@ function get_return_students_infected(prev_latent::Int64,
  return return_students_infected_array::Array{Float64,2}
 end
 
-#=
-Compute number of latents, asymptomatics & symptomatics that could be arriving from each region
-=#
+
+"""
+    get_arrive_students_infected_recovered(uni_age_latent_by_region::Array{Float64,1},
+                                                    uni_age_asymp_by_region::Array{Float64,1},
+                                                    uni_age_symp_by_region::Array{Float64,1},
+                                                    uni_age_rec_by_region::Array{Float64,1})
+
+Compute number of latents, asymptomatics, symptomatics and recovereds that could be arriving from each region
+
+Inputs:
+ - `uni_age_XXX_by_region`: For specified disease state, estimated number of those of uni age estimated to be in that state within that region
+
+Outputs:
+ - `n_initial_XXX`: For specified disease state, number of arriving student popn
+                      estimated to be in that state
+- `propn_rec`: Fraction of uni population (domiciled in UK) that have been previously infected
+
+Location: student\\_travel\\_fns.jl
+"""
 function get_arrive_students_infected_recovered(uni_age_latent_by_region::Array{Float64,1},
                                                 uni_age_asymp_by_region::Array{Float64,1},
                                                 uni_age_symp_by_region::Array{Float64,1},
                                                 uni_age_rec_by_region::Array{Float64,1})
-#Inputs:
-# uni_age_XXX_by_region - For specified disease state, estimated number of those of uni age
-#                       estimated to be in that state within that region
-
-#Outputs:
-# n_initial_XXX - For specified disease state, number of arriving student popn
-#                       estimated to be in that state
-# propn_rec - Fraction of uni population (domiciled in UK) that have been previously infected
 
     # Propn of popn in each region in age range 15-29
     region_popn_in_uni_ages = [1048194,      # 'East of England',

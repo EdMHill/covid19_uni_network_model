@@ -2,7 +2,68 @@
 # MAIN FUNCTION
 #-------------------------------------------------------------------------------
 
-# Run outbreak on network
+"""
+    uni_network_run(RNGseed::Int64,
+                    n_students::Int64,
+                    ton::Int64,
+                    toff::Int64,
+                    infection_parameters::infection_params,
+                    sameday::Int64,
+                    seed_initial_states_fn::Function,
+                    countfinal::Int64,
+                    endtime::Int64,
+                    contact_tracing_active::Bool,
+                    CT_parameters::CT_params,
+                    network_parameters::network_params,
+                    class_generation_parameters::class_generation_params,
+                    society_generation_parameters::society_generation_params,
+                    work_study_group_closure_active::Bool,
+                    mass_testing_active::Bool,
+                    rehouse_strat_active::Bool;
+                    mass_testing_parameters::mass_testing_params = mass_testing_params(),
+                    intervention_fns::Array{Function,1} = Array{Function,1}(undef,0),
+                    generate_classes_fn::Function = generate_classes_default,
+                    generate_student_households_fn::String = "assign_households_no_hierarchy",
+                    assign_household_transrisk_fn::Function = assign_household_transmit_onegroup!,
+                    assign_societies_fn::Function = assign_societies_one_per_student,
+                    assign_cohort_transrisk_fn::Function = assign_cohort_transmit!,
+                    assign_society_sports_transrisk_fn::Function = assign_society_sports_transmit!,
+                    assign_dynamic_social_transrisk_fn::Function = assign_dynamic_social_transmit!
+                    )
+
+Generates a network for a single configuration and runs countfinal number of replicates
+
+For parameters within the parameter structures, see "include_files_network_model/parametertypes.jl"
+
+Inputs:
+- `RNGseed`: Sets the random number generator
+- `n_students`:  Number of students
+- `ton`, `toff`: Work pattern vars. Days on and days off, for sameday==3 ton weeks on followed by toff weeks off
+- `infection_parameters`: Parameter structure for infection params
+- `sameday`: If sameday=0, all workers are at work on the same set of consecutive days. If sameday=1, workers go to work on a random set of consecutive days. If sameday=3, workers go to work on the same number of days, but scattered randomly throughout the week.
+- `initial_states_fn`: Sets amount of nodes to be seeded as latent/asymp/symp/recovered.
+- `countfinal`, `endtime`: Simulation replicates & timesteps for each replicate
+- `endtime`: Number of timesteps each simulation replicate to be performed for
+- `contact_tracing_active`: Set if contact tracing is active or not (Bool type variable)
+- `CT_parameters`: Parameter structure for contact tracing params
+- `network_parameters`: Parameter structure for network params
+- `class_generation_parameters`: Parameter structure for class group generation params
+- `work_study_group_closure_active`: Whether in person group interactions can be made inactive
+- `mass_testing_active`: Whether large scale testing is planned to be used
+- `rehouse_strat_active`: Intervention where those who are symptomatic are rehoused/completely isolate with no contacts.
+- `mass_testing_parameters`: Specify information relevant to mass testing strategy
+- `intervention_fns`: Specify use of any additional, trigger interventions
+- `generate_classes_fn`: Specify function to allocate students to department/cohort & classes
+- `generate_student_households_fn!`: Specify function to assign individuals to households and construct household contact network
+- `assign_household_transrisk_fn`: Specify assignment of individuals to household groups with differing household transmission risk
+- `assign_societies_fn`: Specify how students will be assigned to societies
+- `assign_cohort_transrisk_fn`: Specify how transmission risk from each inidividual to cohort contacts will be assigned
+- `assign_society_sports_transrisk_fn`: Specify how transmission risk from each inidividual to society & sports club contacts will be assigned
+- `assign_dynamic_social_transrisk_fn`: Specify how transmission risk from each inidividual to dynamic social contacts will be assigned
+
+Outputs: `output` - sim_outputs structure \n
+Location: main\\_function.jl
+"""
 function uni_network_run(RNGseed::Int64,
                                         n_students::Int64,
                                         ton::Int64,
@@ -30,34 +91,6 @@ function uni_network_run(RNGseed::Int64,
                                         assign_society_sports_transrisk_fn::Function = assign_society_sports_transmit!,
                                         assign_dynamic_social_transrisk_fn::Function = assign_dynamic_social_transmit!
                                         )
-
-# Inputs:
-# RNGseed - Sets the random number generator
-# n_students::Int64 - Number of students
-# ton::Int64, toff::Int64 - Work pattern vars. Days on and days off, for sameday==3 ton weeks on followed by toff weeks off
-# infection_parameters::infection_params - Parameter structure for infection params
-# sameday::Int64 - Flag.  If sameday=0, all workers are at work on the same set of consecutive days. If sameday=1, workers go to work on a random set of consecutive days. If sameday=3, workers go to work on the same number of days, but scattered randomly throughout the week.
-# initial_states_fn::Function - Sets amount of nodes to be seeded as latent/asymp/symp/recovered.
-# countfinal::Int64, endtime::Int64 - % Simulation replicates & timesteps for each replicate
-# endtime::Int64 - Number of timesteps each simulation replicate to be performed for
-# contact_tracing_active::Bool - Set if contact tracing is active or not (Bool type variable)
-# CT_parameters::CT_params - Parameter structure for contact tracing params
-# network_parameters::network_params - Parameter structure for network params
-# class_generation_parameters::class_generation_params - Parameter structure for class group generation params
-# work_study_group_closure_active::Bool - Whether in person group interactions can be made inactive
-# mass_testing_active::Bool - Whether large scale testing is planned to be used
-# rehouse_strat_active::Bool - Intervention where those who are symptomatic are rehoused/completely isolate with no contacts.
-# mass_testing_parameters::mass_testing_params - Specify information relevant to mass testing strategy
-# intervention_fns - Specify use of any additional, trigger interventions
-# generate_classes_fn - Specify function to allocate students to department/cohort & classes
-# generate_student_households_fn! - Specify function to assign individuals to households and construct household contact network
-# assign_household_transrisk_fn - Specify assignment of individuals to household groups with differing household transmission risk
-# assign_societies_fn - Specify how students will be assigned to societies
-# assign_cohort_transrisk_fn::Function - Specify how transmission risk from each inidividual to cohort contacts will be assigned
-# assign_society_sports_transrisk_fn::Function - Specify how transmission risk from each inidividual to society & sports club contacts will be assigned
-# assign_dynamic_social_transrisk_fn::Function - Specify how transmission risk from each inidividual to dynamic social contacts will be assigned
-
-# For parameters within the parameter structures, see "include_files_network_model/parametertypes.jl"
 
 ##  OUTLINE OF THE CODE STRUCTURE
 #         - Unpack required variables

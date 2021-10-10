@@ -14,19 +14,28 @@ Main functions
 #-------------------------------------------------------------------------------
 # SUPPORTING FUNCTIONS
 #-------------------------------------------------------------------------------
-# Get the IDs of nodes that would be eligable for mass testing
+
+"""
+    find_eligible_nodes(student_info::Array{student_params,1},
+                           node_IDs_in_location::Array{Int64,1},
+                           CT_vars::contact_tracing_vars)
+
+Get the IDs of nodes that would be eligible for mass testing.
+
+Inputs:
+- `student_info::Array{student_params,1}`: Fields of info for each student
+- `node_IDs_in_location::Array{Int64,1}`: List of those residing in locale
+- `CT_vars::contact_tracing_vars`: Variables used with contact tracing module
+
+Outputs:
+- `valid_node_IDs_vec`: List of ID numbers for those that are eligible to be selected in mass testing
+
+Location: mass\\_testing\\_fns.jl
+"""
 function find_eligible_nodes(student_info::Array{student_params,1},
                                  node_IDs_in_location::Array{Int64,1},
                                  CT_vars::contact_tracing_vars
                                  )
-
-# Inputs:
-# student_info::Array{student_params,1} - Fields of info for each student
-# node_IDs_in_location::Array{Int64,1} - List of those residing in locale
-# CT_vars::contact_tracing_vars - Variables used with contact tracing module
-
-# Outputs:
-# valid_node_IDs_vec - List of ID numbers for those that are eligible to be selected in mass testing
 
    # Get number of nodes in the locale of interest
    n_nodes_in_location = length(node_IDs_in_location)
@@ -63,7 +72,18 @@ function find_eligible_nodes(student_info::Array{student_params,1},
    return valid_node_IDs_vec::Array{Int64,1}
 end
 
-# Get those isolating due to contact tracing
+"""
+    apply_CT_isolation!(time::Int64,
+                        Inds_to_be_contacted::Array{Int64,1},
+                        replicate_ID::Int64,
+                        output::sim_outputs,
+                        states::student_states,
+                        record_CT_isolated::Array{Int64,1})
+
+Get those isolating due to contact tracing following mass testing results.
+
+Location: mass\\_testing\\_fns.jl
+"""
 function apply_CT_isolation!(time::Int64,
                               Inds_to_be_contacted::Array{Int64,1},
                               replicate_ID::Int64,
@@ -101,8 +121,49 @@ function apply_CT_isolation!(time::Int64,
 end
 
 
+"""
+    carry_out_mass_tests_in_location(time::Int64,
+                                      replicate_ID::Int64,
+                                      test_coverage::Float64,
+                                      n_valid_node_IDs::Int64,
+                                      valid_node_IDs::Array{Int64,1},
+                                      student_info::Array{student_params,1},
+                                      CT_vars::contact_tracing_vars,
+                                      CT_parameters::CT_params,
+                                      network_parameters::network_params,
+                                      infection_parameters::infection_params,
+                                      states::student_states,
+                                      contacts::contacts_struct,
+                                      household_contacts_per_node::Array{Int64,1},
+                                      output::sim_outputs,
+                                      mass_testing_parameters::mass_testing_params,
+                                      mass_test_ID::Int64,
+                                      rng::MersenneTwister,
+                                      record_test_postive::Array{Int64,1},
+                                      record_hh_isolated::Array{Int64,1},
+                                      record_CT_isolated::Array{Int64,1},
+                                      rehouse_strat_active::Bool)
 
-# Carry out tests
+Perform mass testing.
+
+Inputs:
+- `time::Int64`: Timestep of simulation being performed
+- `replicate_ID::Int64`: Identifies replicate of current simulation batch being performed
+- `test_coverage::Float64`: Proportion of eligible students, in given location, to request to be tested
+- `n_valid_node_IDs::Int64`, `valid_node_IDs::Array{Int64,1}`: List of IDs that are selectable
+- `student_info::Array{student_params,1}`: Fields of info for each student
+- `CT_vars::contact_tracing_vars`: All parameter structures as described
+- `CT_parameters::CT_params`, `network_parameters::network_params`, `states::student_states`, `contacts::contacts_struct`, `output::sim_outputs`: Parameter structures
+- `mass_testing_parameters::mass_testing_params`: Mass testing parameter structure
+- `mass_test_ID::Int64`: ID number for the instance of mass testing that is taking place.
+- `record_test_postive`, `record_hh_isolated`, `record_CT_isolated`: Node level vectors to track whether tested positive and/or isolated during this mass testing occurance
+- `rehouse_strat_active::Bool`: Intervention where those who are symptomatic are rehoused/completely isolate with no contacts.
+
+Outputs:
+- All changes made directly (in place) to the input variables
+
+Location: mass\\_testing\\_fns.jl
+"""
 function carry_out_mass_tests_in_location(time::Int64,
                                              replicate_ID::Int64,
                                              test_coverage::Float64,
@@ -124,21 +185,6 @@ function carry_out_mass_tests_in_location(time::Int64,
                                              record_hh_isolated::Array{Int64,1},
                                              record_CT_isolated::Array{Int64,1},
                                              rehouse_strat_active::Bool)
-# Inputs:
-# time::Int64 - Timestep of simulation being performed
-# replicate_ID::Int64 - Identifies replicate of current simulation batch being performed
-# test_coverage::Float64 - Proportion of eligible students, in given location, to request to be tested
-# n_valid_node_IDs::Int64, valid_node_IDs::Array{Int64,1} - List of IDs that are selectable
-# student_info::Array{student_params,1} - Fields of info for each student
-# CT_vars::contact_tracing_vars - All parameter structures as described
-# CT_parameters::CT_params, network_parameters::network_params, states::student_states, contacts::contacts_struct, output::sim_outputs
-# mass_testing_parameters::mass_testing_params
-# mass_test_ID::Int64 - ID number for the instance of mass testing that is taking place.
-# record_test_postive, record_hh_isolated, record_CT_isolated - Node level vectors to track whether tested positive and/or isolated during this mass testing occurance
-# rehouse_strat_active::Bool - Intervention where those who are symptomatic are rehoused/completely isolate with no contacts.
-
-# Outputs:
-# All changes made directly (in place) to the input variables
 
    # Unpack relevant variables
    @unpack perform_CT_from_infector, prob_backwards_CT = CT_parameters
@@ -326,8 +372,25 @@ end
 #-------------------------------------------------------------------------------
 # MAIN FUNCTIONS
 #-------------------------------------------------------------------------------
+"""
+    perform_mass_test!(mass_testing_parameters::mass_testing_params,
+                        time::Int64,
+                        replicate_ID::Int64,
+                        states::student_states,
+                        CT_vars::contact_tracing_vars,
+                        CT_params::CT_params,
+                        network_parameters::network_params,
+                        infection_parameters::infection_params,
+                        contacts::contacts_struct,
+                        output::sim_outputs,
+                        household_contacts_per_node::Array{Int64,1},
+                        rng::MersenneTwister,
+                        rehouse_strat_active::Bool)
 
-# Run the primary mass testing function
+Run the primary mass testing function.
+
+Location: mass\\_testing\\_fns.jl
+"""
 function perform_mass_test!(mass_testing_parameters::mass_testing_params,
                                           time::Int64,
                                           replicate_ID::Int64,

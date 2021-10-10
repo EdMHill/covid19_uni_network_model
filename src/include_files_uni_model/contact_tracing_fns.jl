@@ -9,7 +9,32 @@ for performing contact tracing
 # Get portion of dynamic contacts to be recallable
 #-------------------------------------------------------------------------------
 
-# In time d days before symptoms up to current day.
+"""
+    recallable_dynamic_contacts(student_ID::Int64,
+                                all_dynamic_contacts::Array{Int64,1},
+                                dynamic_contacts_recalled_propn::Array{Float64,1},
+                                daily_record_inisol::Array{Int64,2},
+                                time_to_check::Int64,
+                                prev_day_val::Int64,
+                                rng::MersenneTwister
+                                )
+
+Dynamic contacts that can be traced a time d days before symptoms up to current day.
+
+Inputs:
+- `student_ID`: Identification number for the student
+- `all_dynamic_contacts`: IDs of those dynamic contacts by the student for the current timestep
+- `dynamic_contacts_recalled_propn::Array{Float64,1}`: Set up recall of dynamic contacts probability (Proportion of contacts remembered x days ago)
+- `daily_record_inisol`: For each node, records per timestep whether in isolation
+- `time_to_check`: Timestep of the simulation to be checked.
+- `prev_day_val`: Number of days previous to be looked at
+- `rng`: The random number generator in use
+
+Outputs:
+- `recallable_contacts`: IDs of individuals (contacted by dynamic contact) to be retained
+
+Location: contact\\_tracing\\_fns.jl
+"""
 function recallable_dynamic_contacts(student_ID::Int64,
                                             all_dynamic_contacts::Array{Int64,1},
                                             dynamic_contacts_recalled_propn::Array{Float64,1},
@@ -18,18 +43,6 @@ function recallable_dynamic_contacts(student_ID::Int64,
                                             prev_day_val::Int64,
                                             rng::MersenneTwister
                                             )
-# Inputs:
-# student_ID
-# all_dynamic_contacts - IDs of those dynamic contacts by the student for the current timestep
-# dynamic_contacts_recalled_propn::Array{Float64,1} - Set up recall of dynamic contacts probability (Proportion of contacts remembered x days ago)
-# daily_record_inisol - For each node, records per timestep whether in isolation
-# time_to_check - Timestep of the simulation to be checked.
-# prev_day_val - Number of days previous to be looked at
-# rng - The random number generator in use
-
-# Outputs:
-# recallable_contacts - IDs of individuals (contacted by dynamic contact) to be retained
-
     # Get proportion of dynamic contacts from prev_day_val days ago to be retained
     if prev_day_val > length(dynamic_contacts_recalled_propn)
         # No contacts can possible be retained.
@@ -76,9 +89,32 @@ end
 # Check contacts made in class setting
 #-------------------------------------------------------------------------------
 
-# In time d days before symptoms up to current day.
-# Go over list of usual class setting contacts & cohort contacts. Check if they actually occurred,
-# or if contact was absent due to isolation/other closure.
+"""
+    get_study_contacts(possible_study_contacts::Array{Int64,1},
+                        daily_record_inisol::Array{Int64,2},
+                        daily_record_inclass::Array{Int64,2},
+                        time_to_check::Int64,
+                        prev_day_val::Int64,
+                        rng::MersenneTwister
+                        )
+
+Study contacts in d days before symptoms up to current day.
+
+Go over list of usual class setting contacts & cohort contacts. Check if they actually occurred, or if contact was absent due to isolation/other closure.
+
+Inputs:
+- `possible_study_contacts`: IDs of study contacts. Will check if actually occurred
+- `daily_record_inisol`: For each node, records per timestep whether in isolation
+- `daily_record_inclass`: For each node, records per timestep whether at workplace
+- `time_to_check`: Timestep of the simulation to be checked.
+- `prev_day_val`: Number of days previous to be looked at
+- `rng`: The random number generator in use
+
+Outputs:
+- `class_contacts`: IDs of individuals to be retained for CT
+
+Location: contact\\_tracing\\_fns.jl
+"""
 function get_study_contacts(possible_study_contacts::Array{Int64,1},
                                 daily_record_inisol::Array{Int64,2},
                                 daily_record_inclass::Array{Int64,2},
@@ -86,17 +122,6 @@ function get_study_contacts(possible_study_contacts::Array{Int64,1},
                                 prev_day_val::Int64,
                                 rng::MersenneTwister
                                 )
-# Inputs:
-# possible_study_contacts - IDs of study contacts. Will check if actually occurred
-# daily_record_inisol - For each node, records per timestep whether in isolation
-# daily_record_inclass - For each node, records per timestep whether at workplace
-# time_to_check - Timestep of the simulation to be checked.
-# prev_day_val - Number of days previous to be looked at
-# rng - The random number generator in use
-
-# Outputs:
-# class_contacts - IDs of individuals to be retained for CT
-
     # Check if any contacts were isolating and/or not in the class or work setting that day
     # If so, will not be a contact
     n_possible_study_contacts = length(possible_study_contacts)
@@ -132,9 +157,35 @@ end
 # Check contacts made in society setting
 #-------------------------------------------------------------------------------
 
-# In time d days before symptoms up to current day.
-# Go over list of usual society contacts. Check if they actually occurred,
-# or if contact was absent due to isolation/other closure.
+"""
+    get_society_contacts(possible_society_contacts::Array{Int64,1},
+                        society_ID::Int64,
+                        daily_record_inisol::Array{Int64,2},
+                        daily_record_atsociety::Array{Int64,3},
+                        time_to_check::Int64,
+                        prev_day_val::Int64,
+                        rng::MersenneTwister
+                        )
+
+Society contacts in d days before symptoms up to current day.
+
+Go over list of usual society setting contacts. Check if they actually occurred, or if contact was absent due to isolation/other closure.
+
+Inputs:
+- `possible_society_contacts`: IDs of usual society contacts. Will check if actually occurred
+- `society_ID`: Unique identification number for the society
+- `possible_study_contacts`: IDs of study contacts. Will check if actually occurred
+- `daily_record_inisol`: For each node, records per timestep whether in isolation
+- `daily_record_inclass`: For each node, records per timestep whether at workplace
+- `time_to_check`: Timestep of the simulation to be checked.
+- `prev_day_val`: Number of days previous to be looked at
+- `rng`: The random number generator in use
+
+Outputs:
+- `recallable_society_contacts`: IDs of individuals contacted in a society to be retained for CT
+
+Location: contact\\_tracing\\_fns.jl
+"""
 function get_society_contacts(possible_society_contacts::Array{Int64,1},
                                 society_ID::Int64,
                                 daily_record_inisol::Array{Int64,2},
@@ -143,18 +194,6 @@ function get_society_contacts(possible_society_contacts::Array{Int64,1},
                                 prev_day_val::Int64,
                                 rng::MersenneTwister
                                 )
-# Inputs:
-# possible_society_contacts - IDs of usual society contacts. Will check if actually occurred
-# society_ID -
-# daily_record_inisol - For each node, records per timestep whether in isolation
-# daily_record_atsociety - For each node, records per timestep whether attended society
-# time_to_check - Timestep of the simulation to be checked.
-# prev_day_val - Number of days previous to be looked at
-# rng - The random number generator in use
-
-# Outputs:
-# recallable_society_contacts - IDs of individuals contacted in a society to be retained for CT
-
     # Check if any contacts were isolating and/or not in the class or work setting that day
     # If so, will not be a contact
     n_possible_society_contacts = length(possible_society_contacts)
@@ -189,8 +228,34 @@ end
 #-------------------------------------------------------------------------------
 # Perform forward CT from an identified infector
 #-------------------------------------------------------------------------------
+"""
+    forwardCT_from_infector!(infector_ID::Int64,
+                            CT_vars::contact_tracing_vars,
+                            contacts::contacts_struct,
+                            CT_parameters::CT_params,
+                            engage_with_CT::Array{Bool,1},
+                            inclass::Array{Int64,2},
+                            time::Int64,
+                            count::Int64,
+                            num_CT::Array{Int64,2},
+                            hh_isolation::Array{Int64,1},
+                            timeisol_CTcause::Array{Int64,1},
+                            network_parameters::network_params,
+                            rng::MersenneTwister,
+                            infector_trace_count::Array{Int64,1})
 
-# Comment break
+Perform forward contact-tracing from an identified infector, if infector reports symptoms and engages with contact-tracing.
+
+Inputs: `infector_ID` - ID of infector of contact traced node,
+        `... parameter structures ...`,
+        `engage_with_CT` - array indicating whether each node engages with contact-tracing,
+        `inclass` - class schedule for each node,
+        `time` - current time in simulation,
+        `count` - number of current replicate,
+        `rng` - random number generator \n
+Outputs: None \n
+Location: contact\\_tracing\\_fns.jl
+"""
 function forwardCT_from_infector!(infector_ID::Int64,
                                 CT_vars::contact_tracing_vars,
                                 contacts::contacts_struct,
@@ -230,6 +295,20 @@ function forwardCT_from_infector!(infector_ID::Int64,
     end
 end
 
+"""
+    trace_node!(args)
+
+For a single specified node, contact trace all contacts for a specified number of days in the past.
+
+Static class contacts and social contacts are treated differently. Random contacts are not traceable.
+
+Inputs: `student_itr` - ID of node being contact traced,
+        `time` - current time in simulation,
+        `... parameter structures ...`,
+        `rng` - random number generator \n
+Outputs: None \n
+Location: contact\\_tracing\\_fns.jl
+"""
 function trace_node!(student_itr::Int64,time::Int64,CT_vars::contact_tracing_vars,
     contacts::contacts_struct,
     CT_parameters::CT_params,network_parameters::network_params,rng)

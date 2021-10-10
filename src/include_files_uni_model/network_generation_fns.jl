@@ -50,20 +50,26 @@ Also a batch of functions to regenerate layers of the network if needed (can be 
 ### FUNCTIONS FOR ALLOCATING STUDENTS TO CLASSES, NOT USING DATA
 #-------------------------------------------------------------------------------
 
-# General structure:
-# Inputs:
-# n_students::Int64 - Number of individuals in the system
-# class_generation_parameters::class_generation_params - Parameter structure with information relevant to class structure
-# RNGseed::Int64 - Used to seed the random number generator
+"""
+    generate_classes_default(n_students::Int64,
+                            class_generation_parameters::class_generation_params,
+                            RNGseed::Int64)
 
-# Outputs:
-# student_info::Array{student_params,1} - Parameter type, with relevant fields of info for each student
-# class_sizes::Array{Array{Int64,1},1} - List of class sizes, with separate vector per cohort
-# class_info::Array{Array{class_params,1},1} - Parameter stucture with class fields. Separate vector per cohort.
-# nodes_by_class::Array{Array{Array{Int64,1},1},1} - List of student IDs per class (vector of vectors per cohort))
+Generate how many people there are per class and which study group each person belongs to.
 
-# Initialise vectors determining how many people there are per class
-# and which study group each person belongs to
+Inputs:
+- `n_students::Int64`: Number of individuals in the system
+- `class_generation_parameters::class_generation_params`: Parameter structure with information relevant to class structure
+- `RNGseed::Int64`: Used to seed the random number generator
+
+Outputs:
+- `student_info::Array{student_params,1}`: Parameter type, with relevant fields of info for each student
+- `class_sizes::Array{Array{Int64,1},1}`: List of class sizes, with separate vector per cohort
+- `class_info::Array{Array{class_params,1},1}`: Parameter stucture with class fields. Separate vector per cohort.
+- `nodes_by_class::Array{Array{Array{Int64,1},1},1}`: List of student IDs per class (vector of vectors per cohort)
+
+Location: network\\_generation\\_fns.jl
+"""
 function generate_classes_default(n_students::Int64,
                                         class_generation_parameters::class_generation_params,
                                         RNGseed::Int64)
@@ -175,8 +181,21 @@ end
 ### FUNCTIONS FOR ALLOCATING STUDENTS TO CLASSES, USING DATA
 #-------------------------------------------------------------------------------
 
+"""
+    get_oncampus_cohort_data(n_students::Int64, n_depts::Int64)
 
-# Get cohort data from file
+Allocate students to cohorts. Get cohort data from a data file.
+
+Inputs:
+- `n_students::Int64`: Number of individuals in the population
+- `n_depts::Int64`: Number of departments in the dataset
+
+Outputs:
+- `cohort_ids::Array{Int64,1}`: For each student, the cohort ID they are in
+- `student_numbers_per_cohort::Array{Int64,1}`: As described
+
+Location: network\\_generation\\_fns.jl
+"""
 function get_oncampus_cohort_data(n_students::Int64, n_depts::Int64)
 
     # Load data from file
@@ -215,18 +234,32 @@ function get_oncampus_cohort_data(n_students::Int64, n_depts::Int64)
             student_numbers_per_cohort::Array{Int64,1}
 end
 
+"""
+    create_class_variables(n_cohorts::Int64,
+                            student_numbers_per_cohort::Array{Int64,1},
+                            class_generation_parameters::class_generation_params,
+                            rng::MersenneTwister)
+
+Allocate students to cohorts. Get cohort data from a data file.
+
+Inputs:
+- `n_cohorts::Int64`: Number of study cohorts in use
+- `student_numbers_per_cohort::Array{Int64,1}`: As described
+- `class_generation_parameters::class_generation_params`: Parameter structure with information relevant to class structure
+- `rng::MersenneTwister`: The random number generator
+
+Outputs:
+- `class_sizes::Array{Array{Int64,1},1}`: List of class sizes, with separate vector per cohort
+- `class_info::Array{Array{class_params,1},1}`: Parameter stucture with class fields. Separate vector per cohort.
+- `class_ids::Array{Array{Int64,1},1}`: List of class identifiers, with separate vector per cohort
+- `nodes_by_class::Array{Array{Array{Int64,1},1},1}`: List of student IDs per class (vector of vectors per cohort)
+
+Location: network\\_generation\\_fns.jl
+"""
 function create_class_variables(n_cohorts::Int64,
                                 student_numbers_per_cohort::Array{Int64,1},
                                 class_generation_parameters::class_generation_params,
                                 rng::MersenneTwister)
-# Inputs:
-# As names describe
-
-# Outputs:
-# class_sizes::Array{Array{Int64,1},1}
-# class_info::Array{Array{class_params,1},1}
-# class_ids::Array{Array{Int64,1},1}
-# nodes_by_class::Array{Array{Array{Int64,1},1},1}
 
     # Get class params
     @unpack class_size_mean, class_size_sd = class_generation_parameters
@@ -296,6 +329,19 @@ function create_class_variables(n_cohorts::Int64,
             nodes_by_class::Array{Array{Array{Int64,1},1},1}
 end
 
+"""
+    create_class_param_type!(student_info::Array{student_params,1},
+                                n_students::Int64,
+                                attendence_propns::Array{Float64,2},
+                                rng::MersenneTwister,
+                                nodes_by_class::Array{Array{Array{Int64,1},1},1},
+                                class_ids::Array{Array{Int64,1},1},
+                                cohort_ids::Array{Int64,1})
+
+Populate the class associated variables in student\\_params.
+
+Location: network\\_generation\\_fns.jl
+"""
 function  create_class_param_type!(student_info::Array{student_params,1},
                                         n_students::Int64,
                                         attendence_propns::Array{Float64,2},
@@ -323,7 +369,15 @@ function  create_class_param_type!(student_info::Array{student_params,1},
     return nothing
 end
 
-# Load departmental data from file and then allocate classes
+"""
+    generate_classes_campus_only(n_students::Int64,
+                                class_generation_parameters::class_generation_params,
+                                RNGseed::Int64)
+
+Load departmental data from data file and then allocate classes to oncampus residents only.
+
+Location: network\\_generation\\_fns.jl
+"""
 function generate_classes_campus_only(n_students::Int64,
                                         class_generation_parameters::class_generation_params,
                                         RNGseed::Int64)
@@ -379,8 +433,15 @@ function generate_classes_campus_only(n_students::Int64,
             nodes_by_class::Array{Array{Array{Int64,1},1},1}
 end
 
+"""
+    generate_classes_all_students(n_students::Int64,
+                                    class_generation_parameters::class_generation_params,
+                                    RNGseed::Int64)
 
-# Load departmental data from file and then allocate classes
+Load departmental data from data file and then allocate classes to all students.
+
+Location: network\\_generation\\_fns.jl
+"""
 function generate_classes_all_students(n_students::Int64,
                                         class_generation_parameters::class_generation_params,
                                         RNGseed::Int64)
@@ -456,26 +517,38 @@ end
 # Social contacts (fixed) are for society/sports groups contacts - instead take a subset each day (can be a larger subset on weekends)
 # Household contacts are within a house and occur everyday
 # Dynamic contacts can occur with any other student
+"""
+    generate_contacts_uni(n_students::Int64,
+                            endtime::Int64,
+                            network_parameters::network_params,
+                            class_generation_params::class_generation_params,
+                            nodes_by_class::Array{Array{Array{Int64,1},1},1},
+                            RNGseed::Int64)
+
+Produce initial contact network layers, split into 4 settings: class, social (fixed), household & dynamic social.
+
+Inputs:
+- `n_students::Int64`: Number of workers in the system
+- `endtime::Int64`: Number of timesteps per simulation
+- `network_parameters::network_params`: Fields relating to the network generation
+- `class_generation_params::class_generation_params`: Parameters relating to student class generation
+- `nodes_by_class::Array{Array{Array{Int64,1},1},1}`: Array storing ids of students within each class
+- `RNGseed::Int64`: Value to seed the random number generator
+
+Outputs:
+- `society_info::Array{society_params,1}`: Populated society parameter structure type
+- `work_or_study_group_contacts_per_node::Array{Int64,1}`: Number of contacts in study setting per student
+- `cohort_contacts_per_node::Array{Int64,1}`: Number of contacts within their cohort per student
+- `society_contacts_per_node::Array{Int64,1}`: Number of contacts in society setting per student
+
+Location: network\\_generation\\_fns.jl
+"""
 function generate_contacts_uni(n_students::Int64,
                                 endtime::Int64,
                                 network_parameters::network_params,
                                 class_generation_params::class_generation_params,
                                 nodes_by_class::Array{Array{Array{Int64,1},1},1},
                                 RNGseed::Int64)
-    # Inputs:
-    # n_students - Number of workers in the system
-    # endtime - Number of timesteps per simulation
-    # network_parameters - Fields relating to the network generation
-    # class_generation_params - parameters relating to student class generation
-    # nodes_by_class - array storing ids of students within each class
-    # RNGseed:Int64 - Value to seed the random number generator
-
-# Outputs:
-    # class_contacts, work_contacts_other_workplace, household_contacts, social_contacts
-    #           - Vector of vectors with IDs of contacts
-    # work_or_study_group_contacts_per_node, work_contacts_other_workplace_per_node,
-    #       household_contacts_per_node, social_contacts_per_node - Total number of regular contacts within each setting
-    # n_households - Total number of households in the system
 
     @unpack student_info, class_sizes,
         prob_social_contact,dd_within_class,
@@ -631,7 +704,25 @@ end
 #-------------------------------------------------------------------------------
 # FUNCTIONS FOR ASSIGNING STUDENTS TO SOCIETIES
 #-------------------------------------------------------------------------------
+"""
+    assign_societies_one_per_student(student_info::Array{student_params,1},
+                                        society_generation_parameters::society_generation_params,
+                                        endtime::Int64,
+                                        RNGseed::Int64)
 
+Assignment of students to societies. One society membership per student.
+
+Inputs:
+- `student_info::Array{student_params,1}`: Parameter type, with relevant fields of info for each student
+- `society_generation_parameters::society_generation_params`: Parameter structure with information relevant to societies
+- `endtime::Int64`: Number of timesteps per simulation
+- `RNGseed::Int64`: Value to seed the random number generator
+
+Outputs:
+- `society_info::Array{society_params,1}`: Populated society parameter structure type
+
+Location: network\\_generation\\_fns.jl
+"""
 function assign_societies_one_per_student(student_info::Array{student_params,1},
                             society_generation_parameters::society_generation_params,
                             endtime::Int64,
@@ -700,6 +791,25 @@ function assign_societies_one_per_student(student_info::Array{student_params,1},
     return society_info::Array{society_params,1}
 end
 
+"""
+    assign_societies_from_aggregated_data(student_info::Array{student_params,1},
+                                            society_generation_parameters::society_generation_params,
+                                            endtime::Int64,
+                                            RNGseed::Int64)
+
+Assignment of students to societies from aggregated data.
+
+Inputs:
+- `student_info::Array{student_params,1}`: Parameter type, with relevant fields of info for each student
+- `society_generation_parameters::society_generation_params`: Parameter structure with information relevant to societies
+- `endtime::Int64`: Number of timesteps per simulation
+- `RNGseed::Int64`: Value to seed the random number generator
+
+Outputs:
+- `society_info::Array{society_params,1}`: Populated society parameter structure type
+
+Location: network\\_generation\\_fns.jl
+"""
 function assign_societies_from_aggregated_data(student_info::Array{student_params,1},
                             society_generation_parameters::society_generation_params,
                             endtime::Int64,
@@ -825,6 +935,25 @@ function assign_societies_from_aggregated_data(student_info::Array{student_param
     return society_info::Array{society_params,1}
 end
 
+"""
+    assign_societies_from_individual_data(student_info::Array{student_params,1},
+                                            society_generation_parameters::society_generation_params,
+                                            endtime::Int64,
+                                            RNGseed::Int64)
+
+Assignment of students to societies from individual-level data.
+
+Inputs:
+- `student_info::Array{student_params,1}`: Parameter type, with relevant fields of info for each student
+- `society_generation_parameters::society_generation_params`: Parameter structure with information relevant to societies
+- `endtime::Int64`: Number of timesteps per simulation
+- `RNGseed::Int64`: Value to seed the random number generator
+
+Outputs:
+- `society_info::Array{society_params,1}`: Populated society parameter structure type
+
+Location: network\\_generation\\_fns.jl
+"""
 function assign_societies_from_individual_data(student_info::Array{student_params,1},
                             society_generation_parameters::society_generation_params,
                             endtime::Int64,
@@ -923,8 +1052,13 @@ end
 # household_contacts_per_node::Array{Int64,1} - Per individual, the number of household contacts they have
 # n_households::Int64 - Number of households in the system
 
-### Fn to read in campus population from data.
-# Use hierarchy (hall > block > floor > household)
+"""
+    get_on_campus_households_from_data!(network_parameters::network_params)
+
+Read in campus population from data file. Use accomodation hierarchy (hall > block > floor > household).
+
+Location: network\\_generation\\_fns.jl
+"""
 function get_on_campus_households_from_data!(network_parameters::network_params)
 
     @unpack lowest_campus_denomination, student_info = network_parameters
@@ -1033,7 +1167,13 @@ function get_on_campus_households_from_data!(network_parameters::network_params)
 end
 
 
-### Fn to assign oncampus households by cohort
+"""
+    get_on_campus_households_by_cohort!(network_parameters::network_params)
+
+Assign oncampus households by cohort.
+
+Location: network\\_generation\\_fns.jl
+"""
 function get_on_campus_households_by_cohort!(network_parameters::network_params)
 
     @unpack lowest_campus_denomination, student_info = network_parameters
@@ -1170,7 +1310,20 @@ function get_on_campus_households_by_cohort!(network_parameters::network_params)
             n_students_living_oncampus::Int64
 end
 
-# Populate hall, block, floor, household lists
+"""
+    populate_oncampus_contact_lists!(global_household_id::Int64,
+                                        hall_member_list::Array{Array{Int64,1},1},
+                                        block_member_list::Array{Array{Array{Int64,1},1},1},
+                                        floor_member_list::Array{Array{Array{Array{Int64,1},1},1},1},
+                                        household_member_list::Array{Array{Array{Array{Array{Int64,1},1},1},1},1},
+                                        household_contacts::Array{Array{Int64,1},1},
+                                        household_contacts_per_node::Array{Int64,1},
+                                        student_info::Array{student_params,1})
+
+Populate hall, block, floor, household accomodation lists.
+
+Location: network\\_generation\\_fns.jl
+"""
 function populate_oncampus_contact_lists!(global_household_id::Int64,
                                             hall_member_list::Array{Array{Int64,1},1},
                                             block_member_list::Array{Array{Array{Int64,1},1},1},
@@ -1211,7 +1364,23 @@ function populate_oncampus_contact_lists!(global_household_id::Int64,
     return n_households_oncampus::Int64
 end
 
-### Fn to perform household assignment for students resident off-campus
+"""
+    assign_off_campus_households!(offcampus_student_household_size_distribution::Array{Float64,1},
+                                    offcampus_student_household_location_dist::Array{Float64,1},
+                                    offcampus_student_location_names::Array{String,1},
+                                    n_students_living_oncampus::Int64,
+                                    n_students::Int64,
+                                    global_household_id::Int64,
+                                    rng::MersenneTwister,
+                                    household_contacts::Array{Array{Int64,1},1},
+                                    household_contacts_per_node::Array{Int64,1},
+                                    student_info::Array{student_params,1};
+                                    assign_strat::String = "None")
+
+Perform household assignment for students resident off-campus.
+
+Location: network\\_generation\\_fns.jl
+"""
 function assign_off_campus_households!(offcampus_student_household_size_distribution::Array{Float64,1},
                                         offcampus_student_household_location_dist::Array{Float64,1},
                                         offcampus_student_location_names::Array{String,1},
@@ -1290,9 +1459,17 @@ function assign_off_campus_households!(offcampus_student_household_size_distribu
     return global_household_id::Int64
 end
 
+"""
+    assign_households_fn!(generate_student_households_fn_name::String,
+                                n_students::Int64,
+                                contacts::contacts_struct,
+                                network_parameters::network_params,
+                                RNGseed::Int64)
 
-### Overall function for assigning househoulds
-# Based on subfunction name, certain sections of the function are called
+Assign students to households.
+
+Location: network\\_generation\\_fns.jl
+"""
 function assign_households_fn!(generate_student_households_fn_name::String,
                                 n_students::Int64,
                                 contacts::contacts_struct,
@@ -1459,7 +1636,22 @@ end
 # FUNCTIONS FOR USE WITH THE CONFIGURATION MODEL
 #-------------------------------------------------------------------------------
 
-#### Class/workplace version ####
+"""
+    configuration_model!(student_info::Array{student_params,1},
+                            external_contact_prob::Float64,
+                            degree_distribution::Distribution,
+                            nodes_within_cluster::Array{Int64,1},
+                            nodes_outside_cluster::Array{Int64,1},
+                            class_contacts::Array{Array{Int64,1},1},
+                            cohort_contacts::Array{Array{Int64,1},1},
+                            class_contacts_per_node::Array{Int64,1},
+                            cohort_contacts_per_node::Array{Int64,1},
+                            RNGseed::Int64)
+
+Configuration model, version used to generate class contacts.
+
+Location: network\\_generation\\_fns.jl
+"""
 function configuration_model!(student_info::Array{student_params,1},
                                 external_contact_prob::Float64,
                                 degree_distribution::Distribution,
@@ -1549,7 +1741,19 @@ function configuration_model!(student_info::Array{student_params,1},
     end
 end
 
-#### Social version (friends-of-friends model) ####
+"""
+    configuration_model!(n_students::Int64,
+                            friend_of_friend_prob::Float64,
+                            degree_distribution::Distribution,
+                            social_contacts::Array{Array{Int64,1},1},
+                            social_contacts_per_node::Array{Int64,1},
+                            max_contacts_social::Int64,
+                            RNGseed::Int64)
+
+Configuration model, used to generate social contacts (friends-of-friends version).
+
+Location: network\\_generation\\_fns.jl
+"""
 function configuration_model!(n_students::Int64,
                                 friend_of_friend_prob::Float64,
                                 degree_distribution::Distribution,
@@ -1622,25 +1826,36 @@ function configuration_model!(n_students::Int64,
     end
 end
 
-# Premake dynamic worker contacts,
-# to be loaded in ahead of simulation
+
+"""
+    generate_dynamic_student_contacts(RNGseed::Int64,
+                                        n_students::Int64,
+                                        endtime::Int64,
+                                        student_info::Array{student_params,1},
+                                        dynamic_social_contact_degree_distribution::Array{Distribution,2},
+                                        max_contacts_social_dynamic::Int64)
+
+Premake dynamic student contacts to be loaded in ahead of simulation
+
+Inputs:
+- `RNGseed::Int64`: Seed the random number generator
+- `n_students::Int64`: Number of students in the system
+- `endtime::Int64`: Number of timesteps simulation will run for
+- `student_info::Array{student_params,1}`: Entry for each student
+- `dynamic_social_contact_degree_distribution::Array{Distribution,2}`: Distribution properties for students dynamic social contacts
+- `max_contacts_social_dynamic::Int64`: Maxmimum permitted number of daily dynamic social contacts
+
+Outputs:
+- `dynamic_social_contacts::Array{Array{Int64,1},2}`: Per node, a record of dynamic social contacts made on each day
+
+Location: network\\_generation\\_fns.jl
+"""
 function generate_dynamic_student_contacts(RNGseed::Int64,
                                             n_students::Int64,
                                             endtime::Int64,
                                             student_info::Array{student_params,1},
                                             dynamic_social_contact_degree_distribution::Array{Distribution,2},
                                             max_contacts_social_dynamic::Int64)
-# Inputs:
-# RNGseed - Seed the random number generator
-# n_students - Number of students in the system
-# endtime - Number of timesteps simulation will run for
-# student_info - entry for each person.
-# dynamic_social_contact_degree_distribution - Distribution properties for students dynamic social contacts
-# max_contacts_social_dynamic - Maxmimum permitted number of daily dynamic social contacts
-
-# Outputs:
-# dynamic_social_contacts - Per node, a record of dynamic social contacts made on each day
-
     # Set the RNG
     rng = MersenneTwister(RNGseed)
 
@@ -1688,7 +1903,29 @@ end
 # FUNCTIONS USED TO GENERATE DYNAMIC ACCOMODATION CONTACTS
 #-------------------------------------------------------------------------------
 
-# Function to get dynamic accommodation contacts for each layer of accommodation hierarchy
+"""
+    get_layer_dynamic_accom_contacts!(dynamic_accommodation_contacts::Array{Array{Int64,1},3},
+                                        RNGseed::Int64,
+                                        contact_prob::Float64,
+                                        persons_to_check::Array{Int64,1},
+                                        accom_hierarchy_name::String,
+                                        endtime::Int64,
+                                        student_ID::Int64)
+
+Get dynamic accommodation contacts for each layer of accommodation hierarchy.
+
+Inputs:
+- `dynamic_accommodation_contacts::Array{Array{Int64,1},3}`: Per node, a record of dynamic accommodation contacts made on each day. Three dimensions of vectors. Row per timestep, column per accom level, slice per student.
+- `RNGseed::Int64`: Seed the random number generator
+- `contact_prob::Float64`: Chance of a contact occurring with each other person per timestep
+- `persons_to_check::Array{Int64,1}`: Persons from the accommodation unit that may be contacted
+- `accom_hierarchy_name::String`: "Hall", "Block" or "Floor", dependent on where dynamic contacts are taking place
+- `endtime::Int64`: Number of timesteps performed in the simulation
+- `student_ID::Int64`: As described
+
+Outputs: None \n
+Location: network\\_generation\\_fns.jl
+"""
 function get_layer_dynamic_accom_contacts!(dynamic_accommodation_contacts::Array{Array{Int64,1},3},
                                             RNGseed::Int64,
                                             contact_prob::Float64,
@@ -1697,20 +1934,6 @@ function get_layer_dynamic_accom_contacts!(dynamic_accommodation_contacts::Array
                                             endtime::Int64,
                                             student_ID::Int64
                                             )
-# Inputs:
-# dynamic_accommodation_contacts::Array{Array{Int64,1},3} - Per node, a record of dynamic accommodation contacts made on each day
-#                                                           Relevant to those in on-campus accommodation only.
-#                                                           Three dimensions of vectors. Row per timestep, column per accom level, slice per student
-# RNGseed - Seed the random number generator
-# contact_prob::Float64 - Chance of a contact occurring with each other person per timestep
-# persons_to_check::Array{Int64,1} - Persons from the accommodation unit that may be contacted
-# accom_hierarchy_string::Int64 - "Hall", "Block" or "Floor", dependent on where dynamic contacts are taking place
-# endtime::Int64 - Number of timesteps performed in the simulation
-# student_ID::Int64 - As decribed
-
-# Outputs:
-# Directly alters dynamic_accommodation_contacts
-
 
     # Set the RNG
     rng = MersenneTwister(RNGseed)
@@ -1754,24 +1977,35 @@ function get_layer_dynamic_accom_contacts!(dynamic_accommodation_contacts::Array
     end
 end
 
-# Premake dynamic contacts within halls of residence,
-# to be loaded in ahead of simulation
+"""
+    generate_dynamic_campus_accom_contacts(RNGseed::Int64,
+                                            n_students::Int64,
+                                            endtime::Int64,
+                                            student_info::Array{student_params,1},
+                                            network_parameters::network_params,
+                                            contacts::contacts_struct)
+
+Premake dynamic contacts within halls of residence to be loaded in ahead of simulation
+
+Inputs:
+- `RNGseed::Int64`: Seed the random number generator
+- `n_students::Int64`: Number of students in the system
+- `endtime::Int64`: Number of timesteps simulation will run for
+- `student_info::Array{student_params,1}`: Entry for each student
+- `network_parameters::network_params`: Items used to generate the contact network
+- `contacts::contacts_struct`: Record of who is in contact with whom in each layer
+
+Outputs:
+- `dynamic_accommodation_contacts::Array{Array{Int64,1},3}`: Per node, a record of dynamic accommodation (on campus) contacts made on each day
+
+Location: network\\_generation\\_fns.jl
+"""
 function generate_dynamic_campus_accom_contacts(RNGseed::Int64,
                                                 n_students::Int64,
                                                 endtime::Int64,
                                                 student_info::Array{student_params,1},
                                                 network_parameters::network_params,
                                                 contacts::contacts_struct)
-# Inputs:
-# RNGseed - Seed the random number generator
-# n_students - Number of students in the system
-# endtime - Number of timesteps simulation will run for
-# student_info - entry for each person.
-# network_parameters - Items used to generate the contact network
-# contacts - Record of who is in contact with whom in each layer
-
-# Outputs:
-# dynamic_accom_contacts - Per node, a record of dynamic accommodation (on campus) contacts made on each day
 
 
     # Unpack required variables
@@ -1875,6 +2109,33 @@ end
 # FUNCTIONS FOR USE WITH THE ERDOS-RENYI NETWORK CONSTRUCTION
 #-------------------------------------------------------------------------------
 
+"""
+    ER_model_uni!(student_info::Array{student_params,1},
+                    n_students::Int64,
+                    class_sizes::Array{Array{Int64,1},1},
+                    dd_within_class::Array{Float64,1},
+                    class_contacts::Array{Array{Int64,1},1},
+                    cohort_contacts::Array{Array{Int64,1},1},
+                    work_or_study_group_contacts_per_node::Array{Int64,1},
+                    cohort_contacts_per_node::Array{Int64,1},
+                    RNGseed::Int64)
+
+Premake dynamic social contacts to be loaded in ahead of simulation
+
+Inputs:
+- `student_info::Array{student_params,1}`: Entry for each student
+- `n_students::Int64`: Number of students in the system
+- `class_sizes::Array{Array{Int64,1},1}`: Number of students in each class
+- `dd_within_class::Array{Float64,1}`: Class size degree distribution
+- `class_contacts::Array{Array{Int64,1},1}`: Log of contacts each person makes in study classes
+- `cohort_contacts::Array{Array{Int64,1},1}`: Log of contacts each person makes with other cohort members
+- `work_or_study_group_contacts_per_node::Array{Int64,1}`: Number of contacts each individual has in work/study setting
+- `cohort_contacts_per_node::Array{Int64,1}`: Number of contacts each individual has with cohort members
+- `RNGseed::Int64`: Seed the random number generator
+
+Outputs: None \n
+Location: network\\_generation\\_fns.jl
+"""
 function ER_model_uni!(student_info::Array{student_params,1},
                     n_students::Int64,
                     class_sizes::Array{Array{Int64,1},1},
@@ -1884,15 +2145,6 @@ function ER_model_uni!(student_info::Array{student_params,1},
                     work_or_study_group_contacts_per_node::Array{Int64,1},
                     cohort_contacts_per_node::Array{Int64,1},
                     RNGseed::Int64)
-# Inputs:
-# student_info - entry for each person.
-# n_students - Number of students in the system
-# class_sizes - Number of students in each class.
-# dd_within_class - Class size degree distribution
-# class_contacts, cohort_contacts - Log of contacts each person makes in study classes & with other cohort members.
-# work_or_study_group_contacts_per_node - Number of contacts each individual has in work/study setting
-# RNGseed - Seed the random number generator
-
 
     # Set the RNG
     rng = MersenneTwister(RNGseed)
@@ -1937,23 +2189,35 @@ function ER_model_uni!(student_info::Array{student_params,1},
     end
 end
 
-# Premake dynamic social contacts,
-# to be loaded in ahead of simulation
+"""
+    generate_dynamic_student_contacts(RNGseed::Int64,
+                                        n_students::Int64,
+                                        endtime::Int64,
+                                        student_info::Array{student_params,1},
+                                        dynamic_conts_mean::Array{Float64,1},
+                                        dynamic_conts_sd::Array{Float64,1})
+
+Premake dynamic social contacts to be loaded in ahead of simulation
+
+Inputs:
+- `RNGseed::Int64`: Seed the random number generator
+- `n_students::Int64`: Number of students in the system
+- `endtime::Int64`: Number of timesteps simulation will run for
+- `student_info::Array{student_params,1}`: Entry for each student
+- `dynamic_conts_mean::Array{Float64,1}`: Distribution properties for students dynamic social contacts, mean
+- `dynamic_conts_sd::Array{Float64,1}`: Distribution properties for students dynamic social contacts, standard deviation
+
+Outputs:
+- `dynamic_social_contacts::Array{Array{Int64,1},2}` - Per node, a record of dynamic social contacts made on each day
+
+Location: network\\_generation\\_fns.jl
+"""
 function generate_dynamic_student_contacts(RNGseed::Int64,
                                             n_students::Int64,
                                             endtime::Int64,
                                             student_info::Array{student_params,1},
                                             dynamic_conts_mean::Array{Float64,1},
                                             dynamic_conts_sd::Array{Float64,1})
-# Inputs:
-# RNGseed - Seed the random number generator
-# n_students - Number of students in the system
-# endtime - Number of timesteps simulation will run for
-# student_info - entry for each person.
-# dynamic_conts_mean, dynamic_conts_sd - Distribution properties for students dynamic social contacts
-
-# Outputs:
-# dynamic_social_contacts - Per node, a record of dynamic social contacts made on each day
 
     # Set the RNG
     rng = MersenneTwister(RNGseed)
@@ -1999,18 +2263,23 @@ end
 # FUNCTIONS TO REGENERATE SPECIFIC LAYERS OF THE NETWORK
 #-------------------------------------------------------------------------------
 
-# Were worker proportion to change from initial value to a non-zero value
-# this function allows regeneration of would_attend_f2f_classes for each node &
-# reconstruct work networks.
-function regenerate_class_contacts(n_students::Int64,network_parameters::network_params,RNGseed::Int64)
-# Inputs:
-# n_students - Number of workers in the system
-# network_parameters
-# RNGseed:Int64 - Value to seed the random number generator
+"""
+    regenerate_class_contacts(n_students::Int64,network_parameters::network_params,RNGseed::Int64)
 
-# Outputs:
-# work_contacts - Vector of vectors with IDs of contacts
-# work_contacts_per_node - Total number of regular contacts within work setting
+Redraw class contacts from specified start time to end time.
+
+Inputs:
+- `n_students::Int64`: Number of nodes in the system
+- `network_parameters::network_params`: Fields relating to the network generation incl. student_info & prob_social_contact
+- `RNGseed::Int64`: Seed the random number generator
+
+Outputs:
+- `class_contacts::Array{Array{Int64,1},1}` - Vector of vectors with IDs of contacts
+- `work_or_study_group_contacts_per_node::Array{Int64,1}` - Total number of regular contacts within work setting
+
+Location: network\\_generation\\_fns.jl
+"""
+function regenerate_class_contacts(n_students::Int64,network_parameters::network_params,RNGseed::Int64)
 
 @unpack student_info, class_sizes,prob_workertype_contact,
     dd_within_class, household_size_distribution,
@@ -2069,22 +2338,33 @@ function regenerate_class_contacts(n_students::Int64,network_parameters::network
                 work_or_study_group_contacts_per_node::Array{Int64,1}
 end
 
+"""
+    regenerate_society_contacts(network_parameters::network_params,
+                                RNGseed::Int64,
+                                n_students::Int64,
+                                starttime::Int64,
+                                endtime::Int64)
+
+Redraw society contacts from specified start time to end time.
+
+Inputs:
+- `network_parameters::network_params`: Fields relating to the network generation incl. student_info & prob_social_contact
+- `RNGseed::Int64`: Seed the random number generator
+- `n_students::Int64`: Number of nodes in the system
+- `starttime::Int64`: Timestep to begin regenerating contacts from
+- `endtime::Int64`: Number of timesteps simulation will run for
+
+Outputs:
+- `social_contacts_per_node::Array{Int64,2}` - Total amount of social contacts each individual has (entry per individual)
+- `society_contacts::Array{Array{Int64,1},2}` - A now amended record of society contacts
+
+Location: network\\_generation\\_fns.jl
+"""
 function regenerate_society_contacts(network_parameters::network_params,
                                             RNGseed::Int64,
                                             n_students::Int64,
                                             starttime::Int64,
                                             endtime::Int64)
-# Inputs:
-# network_parameters - Fields relating to the network generation incl. student_info & prob_social_contact
-# RNGseed - Seed the random number generator
-# n_students - Number of nodes in the system
-# starttime - Timestep to begin regenerating contacts from
-# endtime - Number of timesteps simulation will run for
-
-# Outputs:
-# social_contacts_per_node - Total amount of social contacts each individual has (entry per individual)
-# society_contacts
-#       - A now amended record of society contacts
 
     @unpack student_info, prob_social_contact, society_info = network_parameters
 
@@ -2144,10 +2424,8 @@ function regenerate_society_contacts(network_parameters::network_params,
             society_contacts::Array{Array{Int64,1},2}
 end
 
-
-# Redraw dynamic social contacts from specified start time to end time
-# Allocate to pre-existing array
-function regenerate_dynamic_student_contacts(dynamic_social_contacts::Array{Array{Int64,1},2},
+"""
+    regenerate_dynamic_student_contacts(dynamic_social_contacts::Array{Array{Int64,1},2},
                                             RNGseed::Int64,
                                             n_students::Int64,
                                             starttime::Int64,
@@ -2155,17 +2433,29 @@ function regenerate_dynamic_student_contacts(dynamic_social_contacts::Array{Arra
                                             student_info::Array{student_params,1},
                                             dynamic_social_contact_degree_distribution::Array{Distribution,1})
 
-# Inputs:
-# dynamic_social_contacts - Per node, a record of dynamic worker contacts made on each day
-# RNGseed - Seed the random number generator
-# n_students - Number of nodes in the system
-# starttime - Timestep to begin regenerating contacts from
-# endtime - Number of timesteps simulation will run for
-# student_info - array with entry per worker
-# dynamic_social_contact_degree_distribution- Distribution properties for students dynamic social contacts
+Redraw dynamic social contacts from specified start time to end time.
 
-# Outputs:
-# dynamic_social_contacts - The now amended record of dynamic worker contacts made on each day
+Inputs:
+- `dynamic_social_contacts::Array{Array{Int64,1},2}`: Per node, a record of dynamic worker contacts made on each day
+- `RNGseed::Int64`: Seed the random number generator
+- `n_students::Int64`: Number of nodes in the system
+- `starttime::Int64`: Timestep to begin regenerating contacts from
+- `endtime::Int64`: Number of timesteps simulation will run for
+- `student_info::Array{student_params,1}`: Array with entry per worker
+- `dynamic_social_contact_degree_distribution::Array{Distribution,1}`: Distribution properties for students dynamic social contacts
+
+Outputs:
+- `dynamic_social_contacts`: The now amended record of dynamic worker contacts made on each day
+
+Location: network\\_generation\\_fns.jl
+"""
+function regenerate_dynamic_student_contacts(dynamic_social_contacts::Array{Array{Int64,1},2},
+                                            RNGseed::Int64,
+                                            n_students::Int64,
+                                            starttime::Int64,
+                                            endtime::Int64,
+                                            student_info::Array{student_params,1},
+                                            dynamic_social_contact_degree_distribution::Array{Distribution,1})
 
     # Set the RNG
     rng = MersenneTwister(RNGseed)

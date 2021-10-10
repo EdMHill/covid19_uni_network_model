@@ -13,10 +13,39 @@ Fns to get number of nodes to be seeded in each non-susceptible state
 =#
 
 
-#=
-Fns to select nodes to begin in given non-susceptible state
-=#
-# select from the entire population. Sample time already elapsed in disease state
+"""
+    choose_from_all_popn(rng::MersenneTwister,
+                            n_nodes::Int64,
+                            student_info::Array{student_params,1},
+                            states::student_states,
+                            probasymp::Float64,
+                            infected_by::Array{Int64,1},
+                            n_initial_latent::Int64,
+                            n_initial_asymp::Int64,
+                            n_initial_symp::Int64,
+                            n_initial_rec::Int64,
+                            initialise_start_disease_state_flag::Bool,
+                            count::Int64,
+                            output::sim_outputs)
+
+Select from the entire population. Sample time already elapsed in disease state
+
+Inputs:
+- `rng`: The random number generator
+- `n_nodes`: Numer of nodes in the network
+- `states`: Record of info per node
+- `probasymp`: Probability of infected case being asymptomatic
+- `infected_by`: Record of who each node was infected by
+- `n_initial_latent`, `n_initial_asymp`, `n_initial_symp`, `n_initial_rec`: Numbers to be seeded in the named disease state
+- `initialise_start_disease_state_flag`: If true, those assigned to non-susceptible state are initialised as having just entered that disease state (no elapsed time prior occurred)
+- `count`: Replicate ID
+- `output`: Record of outputs from the simulations
+
+Ouputs:
+- Directly mutates inputs states and infected_by
+
+Location: seed\\_initial\\_state\\_fns.jl
+"""
 function choose_from_all_popn(rng::MersenneTwister,
                                     n_nodes::Int64,
                                     student_info::Array{student_params,1},
@@ -30,22 +59,6 @@ function choose_from_all_popn(rng::MersenneTwister,
                                     initialise_start_disease_state_flag::Bool,
                                     count::Int64,
                                     output::sim_outputs)
-# Inputs:
-# rng::MersenneTwister - The random number generator
-# n_nodes::Int64 - Numer of nodes in the network
-# states::student_states - Record of info per node
-# probasymp::Float64 - Probability of infected case being asymptomatic
-# infected_by::Array{Int64,1} - Record of who each node was infected by
-# n_initial_latent, n_initial_asymp, n_initial_symp, n_initial_rec
-#   -  Numbers to be seeded in the named disease state
-# initialise_start_disease_state_flag::Bool - If true, those assigned to non-susceptible state are initialised
-#                   as having just entered that disease state (no elapsed time prior occurred)
-# count::Int64 - Replicate ID
-# output::sim_outputs - record of outputs from the simulations
-
-# Ouputs:
-# Directly mutates inputs states and infected_by
-
 
    # Initialise initial asymp infectious nodes
    for seed_inf_itr = 1:n_initial_asymp
@@ -246,7 +259,39 @@ Fns to get number of nodes to be seeded in each non-susceptible state
 # n_initial_latent, n_initial_asymp, n_initial_symp, n_initial_rec
 #   -  Numbers to be seeded in the named disease state
 
-# Set up with 9 asymps & 1 symp
+"""
+    set_ten_initial_infected(rng::MersenneTwister,
+                                n_nodes::Int64,
+                                count::Int64,
+                                student_info::Array{student_params,1},
+                                states::student_states,
+                                probasymp::Float64,
+                                infected_by::Array{Int64,1},
+                                recov_propn::Float64,
+                                output::sim_outputs)
+
+Set up with 9 asymptomatics and a single symptomatic
+
+Inputs:
+- `rng`: The random number generator
+- `n_nodes`: Numer of nodes in the network
+- `count`: Replicate ID
+- `student_info`: student_params structure
+- `states`: Record of info per node
+- `probasymp`: Probability of infected case being asymptomatic
+- `infected_by`: Record of who each node was infected by
+- `recov_propn`: Proportion of student population to be initialised in recovered state
+- `output`: Record of outputs from the simulations
+
+
+Ouputs:
+- `n_initial_latent`: Number initially in latent state
+- `n_initial_asymp`: Number initially in asymptomatic state
+- `n_initial_symp`: Number initially in symptomatic state
+- `n_initial_rec`: Number initially in recovered state
+
+Location: seed\\_initial\\_state\\_fns.jl
+"""
 function set_ten_initial_infected(rng::MersenneTwister,
                                     n_nodes::Int64,
                                     count::Int64,
@@ -287,7 +332,39 @@ function set_ten_initial_infected(rng::MersenneTwister,
         n_initial_rec::Int64
 end
 
-# Set up with 5 asymps & 5 symp
+"""
+    set_five_symp_five_asymp_initial(rng::MersenneTwister,
+                                        n_nodes::Int64,
+                                        count::Int64,
+                                        student_info::Array{student_params,1},
+                                        states::student_states,
+                                        probasymp::Float64,
+                                        infected_by::Array{Int64,1},
+                                        recov_propn::Float64,
+                                        output::sim_outputs)
+
+Set up with 5 asymptomatics and 5 symptomatics
+
+Inputs:
+- `rng`: The random number generator
+- `n_nodes`: Numer of nodes in the network
+- `count`: Replicate ID
+- `student_info`: student_params structure
+- `states`: Record of info per node
+- `probasymp`: Probability of infected case being asymptomatic
+- `infected_by`: Record of who each node was infected by
+- `recov_propn`: Proportion of student population to be initialised in recovered state
+- `output`: Record of outputs from the simulations
+
+
+Ouputs:
+- `n_initial_latent`: Number initially in latent state
+- `n_initial_asymp`: Number initially in asymptomatic state
+- `n_initial_symp`: Number initially in symptomatic state
+- `n_initial_rec`: Number initially in recovered state
+
+Location: seed\\_initial\\_state\\_fns.jl
+"""
 function set_five_symp_five_asymp_initial(rng::MersenneTwister,
                                     n_nodes::Int64,
                                     count::Int64,
@@ -328,7 +405,39 @@ function set_five_symp_five_asymp_initial(rng::MersenneTwister,
         n_initial_rec::Int64
 end
 
-# Example to generate counts from distributions
+"""
+    seed_states_with_uncertainty(rng::MersenneTwister,
+                                    n_nodes::Int64,
+                                    count::Int64,
+                                    student_info::Array{student_params,1},
+                                    states::student_states,
+                                    probasymp::Float64,
+                                    infected_by::Array{Int64,1},
+                                    recov_propn::Float64,
+                                    output::sim_outputs)
+
+Generate initial state counts from distributions
+
+Inputs:
+- `rng`: The random number generator
+- `n_nodes`: Numer of nodes in the network
+- `count`: Replicate ID
+- `student_info`: student_params structure
+- `states`: Record of info per node
+- `probasymp`: Probability of infected case being asymptomatic
+- `infected_by`: Record of who each node was infected by
+- `recov_propn`: Proportion of student population to be initialised in recovered state
+- `output`: Record of outputs from the simulations
+
+
+Ouputs:
+- `n_initial_latent`: Number initially in latent state
+- `n_initial_asymp`: Number initially in asymptomatic state
+- `n_initial_symp`: Number initially in symptomatic state
+- `n_initial_rec`: Number initially in recovered state
+
+Location: seed\\_initial\\_state\\_fns.jl
+"""
 function seed_states_with_uncertainty(rng::MersenneTwister,
                                     n_nodes::Int64,
                                     count::Int64,
@@ -373,7 +482,39 @@ function seed_states_with_uncertainty(rng::MersenneTwister,
         n_initial_rec
 end
 
-# Generate counts using info from ODE model
+"""
+    seed_states_using_ODEmodel(rng::MersenneTwister,
+                                n_nodes::Int64,
+                                count::Int64,
+                                student_info::Array{student_params,1},
+                                states::student_states,
+                                probasymp::Float64,
+                                infected_by::Array{Int64,1},
+                                recov_propn::Float64,
+                                output::sim_outputs)
+
+Generate counts using information from a data file
+
+Inputs:
+- `rng`: The random number generator
+- `n_nodes`: Numer of nodes in the network
+- `count`: Replicate ID
+- `student_info`: student_params structure
+- `states`: Record of info per node
+- `probasymp`: Probability of infected case being asymptomatic
+- `infected_by`: Record of who each node was infected by
+- `recov_propn`: Proportion of student population to be initialised in recovered state
+- `output`: Record of outputs from the simulations
+
+
+Ouputs:
+- `n_initial_latent`: Number initially in latent state
+- `n_initial_asymp`: Number initially in asymptomatic state
+- `n_initial_symp`: Number initially in symptomatic state
+- `n_initial_rec`: Number initially in recovered state
+
+Location: seed\\_initial\\_state\\_fns.jl
+"""
 function seed_states_using_ODEmodel(rng::MersenneTwister,
                                     n_nodes::Int64,
                                     count::Int64,

@@ -23,17 +23,24 @@ accommodation functions
 =#
 #-------------------------------------------------------------------------------
 
-#=
-Condition functions. Use time and/or disease state variable values
-For example, if incidence of symptomatic infection exceeds given level, apply restriction
-=#
+"""
+    condition_close_example(intervention_trigger_input_data::intervention_data_feeds,
+                             time::Int64,
+                             network_parameters::network_params)
 
+Example of a triggered intervention based on outbreak situation. if incidence of symptomatic infection exceeds given level, apply restriction.
+
+Inputs:
+- `intervention_trigger_input_data`: intervention_data_feeds structure
+- `time`: Elapsed time
+- `network_parameters`: network_params structure
+
+Outputs: `output_bool`: Denotes whether condition outcome was true or false. \n
+Location: intervention\\_condition\\_affect\\_fns.jl
+"""
 function condition_close_example(intervention_trigger_input_data::intervention_data_feeds,
                                         time::Int64,
                                         network_parameters::network_params)
-# Output:
-#   output_bool - Denotes whether condition outcome was true or false.
-
    @unpack n_students = network_parameters
    @unpack rep_inf_this_timestep = intervention_trigger_input_data
 
@@ -48,6 +55,21 @@ function condition_close_example(intervention_trigger_input_data::intervention_d
    return output_bool::Bool
 end
 
+"""
+    condition_open_example(intervention_trigger_input_data::intervention_data_feeds,
+                             time::Int64,
+                             network_parameters::network_params)
+
+Example of a triggered intervention based on outbreak situation. if incidence of symptomatic infection drops below given level, revert restriction.
+
+Inputs:
+- `intervention_trigger_input_data`: intervention_data_feeds structure
+- `time`: Elapsed time
+- `network_parameters`: network_params structure
+
+Outputs: `output_bool`: Denotes whether condition outcome was true or false. \n
+Location: intervention\\_condition\\_affect\\_fns.jl
+"""
 function condition_open_example(intervention_trigger_input_data::intervention_data_feeds,
                                         time::Int64,
                                         network_parameters::network_params)
@@ -73,16 +95,47 @@ end
 #=
 Cohort level affect functions.
 =#
+"""
+    dummy_example!(network_parameters::network_params,
+                            intervention_trigger_input_data::intervention_data_feeds,
+                            contacts::contacts_struct,
+                            time::Int64)
 
-# Dummy example
+Dummy example for teaching cohort intervention.
+
+Inputs:
+- `network_parameters`: network_params structure
+- `intervention_trigger_input_data`: intervention_data_feeds structure
+- `contacts`: contacts_struct structure
+- `time`: Elapsed time
+
+Outputs: None \n
+Location: intervention\\_condition\\_affect\\_fns.jl
+"""
 function dummy_example!(network_parameters::network_params,
-                                 intervention_trigger_input_data::intervention_data_feeds,
-                                 contacts::contacts_struct,
-                                 time::Int64)
+                           intervention_trigger_input_data::intervention_data_feeds,
+                           contacts::contacts_struct,
+                           time::Int64)
    return nothing
 end
 
-# Stop f2f teaching for cohorts
+"""
+    affect_close_example!(network_parameters::network_params,
+                            intervention_trigger_input_data::intervention_data_feeds,
+                            contacts::contacts_struct,
+                            time::Int64)
+
+Stop face-to-face teaching for cohorts.
+
+Inputs:
+- `network_parameters`: network_params structure
+- `intervention_trigger_input_data`: intervention_data_feeds structure
+- `contacts`: contacts_struct structure
+- `time`: Elapsed time
+
+Outputs: None \n
+Location: intervention\\_condition\\_affect\\_fns.jl
+"""
 function affect_close_example!(network_parameters::network_params,
                                  intervention_trigger_input_data::intervention_data_feeds,
                                  contacts::contacts_struct,
@@ -126,7 +179,23 @@ function affect_close_example!(network_parameters::network_params,
    end
 end
 
-# Restart f2f teaching for cohorts
+"""
+    affect_open_example!(network_parameters::network_params,
+                            intervention_trigger_input_data::intervention_data_feeds,
+                            contacts::contacts_struct,
+                            time::Int64)
+
+Restart face-to-face teaching for cohorts.
+
+Inputs:
+- `network_parameters`: network_params structure
+- `intervention_trigger_input_data`: intervention_data_feeds structure
+- `contacts`: contacts_struct structure
+- `time`: Elapsed time
+
+Outputs: None \n
+Location: intervention\\_condition\\_affect\\_fns.jl
+"""
 function affect_open_example!(network_parameters::network_params,
                                  intervention_trigger_input_data::intervention_data_feeds,
                                  contacts::contacts_struct,
@@ -173,7 +242,23 @@ end
 #=
 Society related functions
 =#
-# Check if society can remain active based on recent reported cases
+"""
+    society_incidence_check!(network_parameters::network_params,
+                            intervention_trigger_input_data::intervention_data_feeds,
+                            contacts::contacts_struct,
+                            time::Int64)
+
+Check if society can remain active based on recent reported cases.
+
+Inputs:
+- `network_parameters`: network_params structure
+- `intervention_trigger_input_data`: intervention_data_feeds structure
+- `contacts`: contacts_struct structure
+- `time`: Elapsed time
+
+Outputs: None \n
+Location: intervention\\_condition\\_affect\\_fns.jl
+"""
 function society_incidence_check!(network_parameters::network_params,
                                  intervention_trigger_input_data::intervention_data_feeds,
                                  contacts::contacts_struct,
@@ -264,21 +349,31 @@ end
 accommodation related functions
 =#
 
-# Call function to do condition check
+"""
+    accom_lockdown_unit_check(unit_resident_list::Array{Int64,1},
+                               intervention_parameters::intervention_params,
+                               student_info::Array{student_params,1},
+                               time::Int64)
+
+Check if accomodation unit enters lockdown.
+
+Inputs:
+- `unit_resident_list::Array{Int64,1}`: The IDs of students in the accommodation unit being checked
+- `intervention_trigger_input_data::intervention_params`: Values used to check if measures should be enforced/relaxed
+- `student_info::student_params `: Information of each student in the system
+- `time`: Current time of the simulation
+
+Outputs:
+- `recent_reported_cases::Int64`: Number of cases within relevant time period in accommodation unit of interest
+- `propn_unit_reporting::Float64`: Porportion of popn impacted within relevant time period in accommodation unit of interest
+
+Location: intervention\\_condition\\_affect\\_fns.jl
+"""
 function accom_lockdown_unit_check(unit_resident_list::Array{Int64,1},
                                        intervention_parameters::intervention_params,
                                        student_info::Array{student_params,1},
                                        time::Int64
                                        )
-# Inputs:
-# unit_resident_list::Array{Int64,1} - The IDs of students in the accommodation unit being checked
-# intervention_parameters::intervention_params - Valeus used to check if measures should be enforced/relaxed
-# student_info::student_params - Information of each student in the system
-# time::Int64 - Current time of the simulation
-
-# Outputs:
-# recent_reported_cases::Int64 - Number of cases within relevant time period in accommodation unit of interest
-# propn_unit_reporting::Float64 - Porportion of popn impacted within relevant time period in accommodation unit of interest
 
    @unpack time_horizon, inactivation_length, absolute_case_threshold,
             propn_case_threshold, release_condition_time_horizon,
@@ -310,21 +405,31 @@ function accom_lockdown_unit_check(unit_resident_list::Array{Int64,1},
    return condition_values::Array{Float64,1}
 end
 
-# Call function to modify statuses as appropraite
+"""
+    accom_lockdown_unit_alter_status!(unit_resident_list::Array{Int64,1},
+                                       intervention_parameters::intervention_params,
+                                       student_info::Array{student_params,1},
+                                       time::Int64,
+                                       condition_values::Array{Float64,1})
+
+Modify accomodation unit lockdown status.
+
+Inputs:
+- `unit_resident_list::Array{Int64,1}`: The IDs of students in the accommodation unit being checked
+- `intervention_parameters::intervention_params`: Valeus used to check if measures should be enforced/relaxed
+- `student_info::student_params`: Information of each student in the system
+- `time::Int64`: Current time of the simulation
+- `condition_values::Array{Float64,1}``: Criteria to check to determine of accomodation lockdown status requires amendment
+
+Outputs: None \n
+Location: intervention\\_condition\\_affect\\_fns.jl
+"""
 function accom_lockdown_unit_alter_status!(unit_resident_list::Array{Int64,1},
                                        intervention_parameters::intervention_params,
                                        student_info::Array{student_params,1},
                                        time::Int64,
                                        condition_values::Array{Float64,1}
                                        )
-# Inputs:
-# unit_resident_list::Array{Int64,1} - The IDs of students in the accommodation unit being checked
-# intervention_parameters::intervention_params - Valeus used to check if measures should be enforced/relaxed
-# student_info::student_params - Information of each student in the system
-# time::Int64 - Current time of the simulation
-
-# Outputs:
-#  Direct modifications to student_info field on accommodation lockdown status
 
    @unpack time_horizon, inactivation_length, absolute_case_threshold,
             propn_case_threshold, release_condition_time_horizon,
@@ -383,10 +488,26 @@ function accom_lockdown_unit_alter_status!(unit_resident_list::Array{Int64,1},
    end
 end
 
-# Check whether to "lock down" accommodation at various levels
-# Hall level, block level, floor level, or household level
-# Applies to on campus accommodation only
-# Class/society activities no longer permitted for affected students
+"""
+    accom_lockdown_hall_level!(network_parameters::network_params,
+                                    intervention_trigger_input_data::intervention_data_feeds,
+                                    contacts::contacts_struct,
+                                    time::Int64)
+
+Check whether to "lock down" accommodation at hall level.
+
+Applies to oncampus accommodation only. \n
+Class/society activities no longer permitted for affected students. \n
+
+Inputs:
+- `network_parameters::network_params`: network_params structure
+- `intervention_trigger_input_data::intervention_params`: Values used to check if measures should be enforced/relaxed
+- `contacts::contacts_struct`: contacts_struct structure
+- `time`: Current time of the simulation
+
+Outputs: None \n
+Location: intervention\\_condition\\_affect\\_fns.jl
+"""
 function accom_lockdown_hall_level!(network_parameters::network_params,
                                     intervention_trigger_input_data::intervention_data_feeds,
                                     contacts::contacts_struct,
@@ -430,6 +551,26 @@ function accom_lockdown_hall_level!(network_parameters::network_params,
    end
 end
 
+"""
+    accom_lockdown_block_level!(network_parameters::network_params,
+                                    intervention_trigger_input_data::intervention_data_feeds,
+                                    contacts::contacts_struct,
+                                    time::Int64)
+
+Check whether to "lock down" accommodation at block level.
+
+Applies to oncampus accommodation only. \n
+Class/society activities no longer permitted for affected students. \n
+
+Inputs:
+- `network_parameters::network_params`: network_params structure
+- `intervention_trigger_input_data::intervention_params`: Values used to check if measures should be enforced/relaxed
+- `contacts::contacts_struct`: contacts_struct structure
+- `time`: Current time of the simulation
+
+Outputs: None \n
+Location: intervention\\_condition\\_affect\\_fns.jl
+"""
 function accom_lockdown_block_level!(network_parameters::network_params,
                                     intervention_trigger_input_data::intervention_data_feeds,
                                     contacts::contacts_struct,
@@ -478,6 +619,26 @@ function accom_lockdown_block_level!(network_parameters::network_params,
    end
 end
 
+"""
+    accom_lockdown_floor_level!(network_parameters::network_params,
+                                    intervention_trigger_input_data::intervention_data_feeds,
+                                    contacts::contacts_struct,
+                                    time::Int64)
+
+Check whether to "lock down" accommodation at floor level.
+
+Applies to oncampus accommodation only. \n
+Class/society activities no longer permitted for affected students. \n
+
+Inputs:
+- `network_parameters::network_params`: network_params structure
+- `intervention_trigger_input_data::intervention_params`: Values used to check if measures should be enforced/relaxed
+- `contacts::contacts_struct`: contacts_struct structure
+- `time`: Current time of the simulation
+
+Outputs: None \n
+Location: intervention\\_condition\\_affect\\_fns.jl
+"""
 function accom_lockdown_floor_level!(network_parameters::network_params,
                                     intervention_trigger_input_data::intervention_data_feeds,
                                     contacts::contacts_struct,
@@ -531,6 +692,26 @@ function accom_lockdown_floor_level!(network_parameters::network_params,
    end
 end
 
+"""
+    accom_lockdown_household_level!(network_parameters::network_params,
+                                    intervention_trigger_input_data::intervention_data_feeds,
+                                    contacts::contacts_struct,
+                                    time::Int64)
+
+Check whether to "lock down" accommodation at household level.
+
+Applies to oncampus accommodation only. \n
+Class/society activities no longer permitted for affected students. \n
+
+Inputs:
+- `network_parameters::network_params`: network_params structure
+- `intervention_trigger_input_data::intervention_params`: Values used to check if measures should be enforced/relaxed
+- `contacts::contacts_struct`: contacts_struct structure
+- `time`: Current time of the simulation
+
+Outputs: None \n
+Location: intervention\\_condition\\_affect\\_fns.jl
+"""
 function accom_lockdown_household_level!(network_parameters::network_params,
                                           intervention_trigger_input_data::intervention_data_feeds,
                                           contacts::contacts_struct,

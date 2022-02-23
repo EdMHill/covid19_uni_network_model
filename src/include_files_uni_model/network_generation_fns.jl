@@ -1185,7 +1185,10 @@ function get_on_campus_households_by_cohort!(network_parameters::network_params)
 
     # Use the campus accom structure data file
     # Get the campus data to be loaded
-    campus_data_raw = readdlm("../Data/campus_data.txt",Int64) # Hall > Block > Floor > Household > Kitchen
+    # Columns 1-5: IDs for each level of accomodation hierarchy,
+    #              Hall (Column 1)  > Block (Column 2) > Floor (Column 3) > Household (Column 4) > Kitchen (Column 5)
+    # Column 6: Bathroom type (Legend: 1 - Communal bathroom; 2 - Ensuite single; 3 - Ensuite studio; 4 - Twin bathroom; 5 - Twin bathroom: studio)
+    campus_data_raw = readdlm("../Data/campus_data.txt",Int64)
 
     # Initialise to ensure Int64 type
     # Number of rows of input data gives size of campus population
@@ -1230,10 +1233,13 @@ function get_on_campus_households_by_cohort!(network_parameters::network_params)
 
 
     # Also take the deparmental allocation.
-    # Map study type (undergrad or postgrad value) to cohort ID.
-    # Then sort ascending.
+    # dept_data_oncampus has two columns.
+    # Column 1 for department ID. Column 2 for undergrad (=1), postgrad taught (=2), postgrad research (=3)
     dept_data_oncampus = readdlm("../Data/department_student_data.txt",Int64)
     n_depts = 28  # Number of departments in use with this dataset
+
+    # Map study type (undergrad or postgrad value) to cohort ID.
+    # Then sort ascending.
     student_cohort_ID = zeros(Int64,n_students_living_oncampus)
     for student_itr = 1:n_students_living_oncampus
         # Map to cohort ID value. Determined by whether it study type is

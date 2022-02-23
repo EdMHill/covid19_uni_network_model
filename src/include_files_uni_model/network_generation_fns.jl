@@ -199,7 +199,8 @@ Location: network\\_generation\\_fns.jl
 function get_oncampus_cohort_data(n_students::Int64, n_depts::Int64)
 
     # Load data from file
-    # Two columns. Column 1 for department ID. Column 2 for undergrad (=1) or postgrad (=2)
+    # oncampus_dept_data_raw has two columns.
+    # Column 1 for department ID. Column 2 for undergrad (=1), postgrad taught (=2), postgrad research (=3)
     oncampus_dept_data_raw = readdlm("../Data/department_student_data.txt",Int64)
 
     # Number of rows of input data gives size of campus population
@@ -1064,7 +1065,10 @@ function get_on_campus_households_from_data!(network_parameters::network_params)
     @unpack lowest_campus_denomination, student_info = network_parameters
 
     # Get the campus data to be loaded
-    campus_data_raw = readdlm("../Data/campus_data.txt",Int64) # Hall > Block > Floor > Household > Kitchen
+    # Columns 1-5: IDs for each level of accomodation hierarchy,
+    #              Hall (Column 1)  > Block (Column 2) > Floor (Column 3) > Household (Column 4) > Kitchen (Column 5)
+    # Column 6: Bathroom type (Legend: 1 - Communal bathroom; 2 - Ensuite single; 3 - Ensuite studio; 4 - Twin bathroom; 5 - Twin bathroom: studio)
+    campus_data_raw = readdlm("../Data/campus_data.txt",Int64)
 
     # Initialise to ensure Int64 type
     # Number of rows of input data gives size of campus population
@@ -1180,10 +1184,9 @@ function get_on_campus_households_by_cohort!(network_parameters::network_params)
 
     #=
     Use the campus accom structure data file
-    Also take the deparmental allocation. Sort ascending. Allocate in order.
+    Also take the departmental allocation. Sort ascending. Allocate in order.
     =#
 
-    # Use the campus accom structure data file
     # Get the campus data to be loaded
     # Columns 1-5: IDs for each level of accomodation hierarchy,
     #              Hall (Column 1)  > Block (Column 2) > Floor (Column 3) > Household (Column 4) > Kitchen (Column 5)

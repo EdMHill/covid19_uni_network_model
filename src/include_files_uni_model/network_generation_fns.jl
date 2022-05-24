@@ -200,7 +200,7 @@ function get_oncampus_cohort_data(n_students::Int64, n_depts::Int64)
 
     # Load data from file
     # oncampus_dept_data_raw has two columns.
-    # Column 1 for department ID. Column 2 for undergrad (=1), postgrad taught (=2), postgrad research (=3)
+    # Column 1 for department ID. Column 2 for first-year undergrad (=1), Non-first year undergrad (=2), postgrad (=3)
     oncampus_dept_data_raw = readdlm("../Data/department_student_data.txt",Int64)
 
     # Number of rows of input data gives size of campus population
@@ -219,7 +219,7 @@ function get_oncampus_cohort_data(n_students::Int64, n_depts::Int64)
             student_cohort_ID = assigned_dept
         elseif study_level == 2 # Non-first year undergrad study
             student_cohort_ID = assigned_dept + n_depts
-        elseif study_level == 3 # Postgrad study. In 2nd half of list of cohort IDs.
+        elseif study_level == 3 # Postgrad study. In last third of list of cohort IDs.
             student_cohort_ID = assigned_dept + (2*n_depts)
         else
             # Sanity check. Throw error if invalid value
